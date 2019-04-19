@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.IO;
 using System.Text;
 
 namespace Compute
@@ -15,6 +16,7 @@ namespace Compute
             this.MinPort = this.GetConfigValue<ushort>(nameof(this.MinPort));
             this.MaxPort = this.GetConfigValue<ushort>(nameof(this.MaxPort));
             this.PackageFilePath = this.GetConfigValue(nameof(this.PackageFilePath));
+            this.ContainerFilePath = this.GetContainerFilePath();
         }
 
         /// <summary>
@@ -22,6 +24,7 @@ namespace Compute
         /// </summary>
         public static ComputeConfiguration Instance => config.Value;
 
+        public string ContainerFilePath { get; set; }
         public ushort MaxPort { get; set; }
         public ushort MinPort { get; set; }
         public int NumberOfContainersToStart { get; set; }
@@ -70,6 +73,17 @@ namespace Compute
         private string GetConfigValue(string appSettingsConfigKey)
         {
             return ConfigurationManager.AppSettings.Get(appSettingsConfigKey);
+        }
+
+        private string GetContainerFilePath()
+        {
+            var solutionFolderPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\"));
+            Console.WriteLine(solutionFolderPath);
+
+            var containerFilePath = Path.GetFullPath(Path.Combine(solutionFolderPath, @"Container\Bin\Debug\Container.exe"));
+            Console.WriteLine(containerFilePath);
+
+            return containerFilePath;
         }
     }
 }

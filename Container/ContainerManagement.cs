@@ -2,7 +2,7 @@
 
 namespace Container
 {
-    internal class ContainerManagement : IContainerManagement
+    public class ContainerManagement : IContainerManagement
     {
         public string CheckHealth()
         {
