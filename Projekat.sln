@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobWorker", "JobWorker\JobW
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobWorkerTests", "JobWorkerTests\JobWorkerTests.csproj", "{D0A32448-4469-43A5-801A-F462BE32A5CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Container", "Container\Container.csproj", "{AD5A3B12-BDBF-4EE5-A436-D92BC0B22B55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D0A32448-4469-43A5-801A-F462BE32A5CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0A32448-4469-43A5-801A-F462BE32A5CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0A32448-4469-43A5-801A-F462BE32A5CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD5A3B12-BDBF-4EE5-A436-D92BC0B22B55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD5A3B12-BDBF-4EE5-A436-D92BC0B22B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD5A3B12-BDBF-4EE5-A436-D92BC0B22B55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD5A3B12-BDBF-4EE5-A436-D92BC0B22B55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

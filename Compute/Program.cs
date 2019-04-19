@@ -12,7 +12,8 @@ namespace Compute
     {
         private static void Main()
         {
-            Console.WriteLine(ComputeConfiguration.Instance);
+            var config = ComputeConfiguration.Instance;
+            Console.WriteLine(config);
 
             Console.WriteLine("Press ENTER to exit...");
             Console.ReadLine();
