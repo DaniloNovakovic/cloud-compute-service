@@ -18,13 +18,13 @@ namespace JobWorker.Tests
         [TestCase(null)]
         [TestCase("")]
         [TestCase("   ")]
-        public void Start_IsNullEmptyOrWhiteSpace_ThrowArgumentException(string containerId)
+        public void Start_ContainerIdIsNullEmptyOrWhiteSpace_ThrowArgumentException(string containerId)
         {
             Assert.That(() => this.worker.Start(containerId), Throws.Exception.InstanceOf<ArgumentException>());
         }
 
         [Test]
-        public void Stop_IsCalledBeforeStop_ThrowInvalidOperationException()
+        public void Stop_WhenCalledBeforeStart_ThrowInvalidOperationException()
         {
             Assert.That(() => this.worker.Stop(), Throws.Exception.InstanceOf<InvalidOperationException>());
         }
