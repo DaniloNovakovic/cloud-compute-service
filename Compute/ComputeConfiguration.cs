@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Compute
@@ -13,10 +14,15 @@ namespace Compute
         private ComputeConfiguration()
         {
             this.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(this.NumberOfContainersToStart));
+
             this.MinPort = this.GetConfigValue<ushort>(nameof(this.MinPort));
             this.MaxPort = this.GetConfigValue<ushort>(nameof(this.MaxPort));
-            this.PackageFilePath = this.GetConfigValue(nameof(this.PackageFilePath));
-            this.ContainerFilePath = this.GetContainerFilePath();
+
+            this.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.PackageRelativeFolderPath));
+            this.PackageFullFolderPath = this.GetFullPath(this.PackageRelativeFolderPath);
+
+            this.ContainerRelativeFilePath = this.GetConfigValue(nameof(this.ContainerRelativeFilePath));
+            this.ContainerFullFilePath = this.GetFullPath(this.ContainerRelativeFilePath);
         }
 
         /// <summary>
@@ -24,19 +30,23 @@ namespace Compute
         /// </summary>
         public static ComputeConfiguration Instance => config.Value;
 
-        public string ContainerFilePath { get; set; }
-        public ushort MaxPort { get; set; }
-        public ushort MinPort { get; set; }
-        public int NumberOfContainersToStart { get; set; }
-        public string PackageFilePath { get; set; }
+        public string ContainerFullFilePath { get; }
+        public string ContainerRelativeFilePath { get; }
+        public ushort MaxPort { get; }
+        public ushort MinPort { get; }
+        public int NumberOfContainersToStart { get; }
+        public string PackageFullFolderPath { get; }
+        public string PackageRelativeFolderPath { get; }
 
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"{nameof(this.NumberOfContainersToStart)} = {this.NumberOfContainersToStart}");
-            builder.AppendLine($"{nameof(this.MinPort)} = {this.MinPort}");
-            builder.AppendLine($"{nameof(this.MaxPort)} = {this.MaxPort}");
-            builder.AppendLine($"{nameof(this.PackageFilePath)} = {this.PackageFilePath}");
+
+            foreach (var property in this.GetType().GetProperties().Where(prop => prop.PropertyType != this.GetType()))
+            {
+                builder.Append(property.Name).Append(" = ").Append(property.GetValue(this)).AppendLine();
+            }
+
             return builder.ToString();
         }
 
@@ -75,15 +85,9 @@ namespace Compute
             return ConfigurationManager.AppSettings.Get(appSettingsConfigKey);
         }
 
-        private string GetContainerFilePath()
+        private string GetFullPath(string relativePath)
         {
-            var solutionFolderPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\"));
-            Console.WriteLine(solutionFolderPath);
-
-            var containerFilePath = Path.GetFullPath(Path.Combine(solutionFolderPath, @"Container\Bin\Debug\Container.exe"));
-            Console.WriteLine(containerFilePath);
-
-            return containerFilePath;
+            return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath));
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Compute
 
             for (int i = 0; i < config.NumberOfContainersToStart; ++i)
             {
-                Process.Start(fileName: config.ContainerFilePath, arguments: $"{config.MinPort + 1 + i}");
+                Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{config.MinPort + 1 + i}");
             }
 
             Console.WriteLine("Press ENTER to exit...");

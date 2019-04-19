@@ -8,9 +8,13 @@ namespace Container
         private readonly IAssemblyLoader assemblyLoader;
         private IWorker worker;
 
-        public ContainerManagement(IAssemblyLoader assemblyLoader = null)
+        public ContainerManagement()
         {
-            this.assemblyLoader = assemblyLoader;
+        }
+
+        public ContainerManagement(IAssemblyLoader assemblyLoader)
+        {
+            this.assemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
         }
 
         public string CheckHealth()
@@ -21,12 +25,14 @@ namespace Container
         public string Load(string assemblyName)
         {
             if (string.IsNullOrWhiteSpace(assemblyName))
+            {
                 return $"[ERROR] {nameof(assemblyName)} can't be null, empty or whitespace!";
+            }
 
             try
             {
-                worker = assemblyLoader.LoadAssembly(assemblyName);
-                worker.Start("1"); // TODO: Find a way to send proper id
+                this.worker = this.assemblyLoader.LoadAssembly(assemblyName);
+                this.worker.Start("1"); // TODO: Find a way to send proper id
                 return "[SUCCESS] Successfully loaded assembly!";
             }
             catch (Exception ex)
