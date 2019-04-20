@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace PackageLibrary
 {
@@ -10,12 +6,12 @@ namespace PackageLibrary
     {
         public void Copy(string fromFullPath, string toFullPath)
         {
-            throw new NotImplementedException();
+            File.Copy(fromFullPath, toFullPath, overwrite: true);
         }
 
         public void Delete(string packageFolderFullPath)
         {
-            throw new NotImplementedException();
+            Directory.Delete(packageFolderFullPath, recursive: true);
         }
     }
 }

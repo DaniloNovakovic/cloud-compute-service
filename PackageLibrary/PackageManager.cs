@@ -1,4 +1,6 @@
-﻿namespace PackageLibrary
+﻿using System.Configuration;
+
+namespace PackageLibrary
 {
     public class PackageManager
     {
@@ -16,9 +18,21 @@
             this.writer = writer ?? new PackageWriter();
         }
 
-        public PackageReaderResult ReadPackage(string packageConfigurationPath)
+        public PackageReaderResult ReadPackage(string packageConfigurationPath, int maxAllowedNumberOfInstances = 4)
         {
-            return this.reader.ReadPackage(packageConfigurationPath);
+            var packageResult = this.reader.ReadPackage(packageConfigurationPath);
+
+            if (packageResult.NumberOfInstances < 0 && packageResult.NumberOfInstances > maxAllowedNumberOfInstances)
+            {
+                throw new ConfigurationErrorsException(nameof(packageResult.NumberOfInstances));
+            }
+
+            if (string.IsNullOrWhiteSpace(packageResult.AssemblyName))
+            {
+                throw new ConfigurationErrorsException(nameof(packageResult.AssemblyName));
+            }
+
+            return packageResult;
         }
 
         public void DeletePackage(string packageFolderFullPath)
