@@ -1,11 +1,17 @@
 ﻿using System.Configuration;
-using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace Compute
+namespace PackageLibrary
 {
-    internal static class PackageReader
+    public class PackageReader : IPackageReader
     {
+        private readonly IXDocumentLoader xDocLoader;
+
+        public PackageReader(IXDocumentLoader loader = null)
+        {
+            this.xDocLoader = loader ?? new XDocumentLoader();
+        }
+
         /// <summary>
         /// Attempts to extract config values from packageConfigurationPath into PackageReaderResult
         /// </summary>
@@ -13,16 +19,16 @@ namespace Compute
         /// FullPath of configuration where .xml config file for package is located
         /// </param>
         /// <exception cref="ConfigurationErrorsException">Configuration is in incorrect format</exception>
-        public static PackageReaderResult ReadPackage(string packageConfigurationPath)
+        public PackageReaderResult ReadPackage(string packageConfigurationPath)
         {
-            var doc = XDocument.Load(packageConfigurationPath);
+            var xDoc = this.xDocLoader.Load(packageConfigurationPath);
 
-            if (!int.TryParse(doc.XPathSelectElement("//numberOfInstances").Attribute("value").Value, out int numberOfInstances))
+            if (!int.TryParse(xDoc.XPathSelectElement("//numberOfInstances").Attribute("value").Value, out int numberOfInstances))
             {
                 throw new ConfigurationErrorsException($"numberOfInstances element is either missing or its value is in incorrect format in {packageConfigurationPath}");
             }
 
-            string assemblyName = doc.XPathSelectElement("//assembly/name").Value;
+            string assemblyName = xDoc.XPathSelectElement("//assembly/name").Value;
 
             if (string.IsNullOrWhiteSpace(assemblyName))
             {

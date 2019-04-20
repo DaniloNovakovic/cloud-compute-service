@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using PackageLibrary;
 
 namespace Compute
 {
@@ -17,7 +18,7 @@ namespace Compute
             var config = ComputeConfiguration.Instance;
             Console.WriteLine(config);
 
-            var packageResult = PackageReader.ReadPackage(Path.Combine(config.PackageFullFolderPath, config.PackageConfigFileName));
+            var packageResult = new PackageReader().ReadPackage(Path.Combine(config.PackageFullFolderPath, config.PackageConfigFileName));
             Console.WriteLine(packageResult.NumberOfInstances);
             Console.WriteLine(packageResult.AssemblyName);
 
