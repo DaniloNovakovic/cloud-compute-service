@@ -22,7 +22,7 @@ namespace PackageLibrary
         {
             var packageResult = this.reader.ReadPackage(packageConfigurationPath);
 
-            if (packageResult.NumberOfInstances < 0 && packageResult.NumberOfInstances > maxAllowedNumberOfInstances)
+            if (packageResult.NumberOfInstances < 0 || packageResult.NumberOfInstances > maxAllowedNumberOfInstances)
             {
                 throw new ConfigurationErrorsException(nameof(packageResult.NumberOfInstances));
             }
