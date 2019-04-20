@@ -26,7 +26,7 @@
             this.writer.Delete(packageFolderFullPath);
         }
 
-        public void CopyPackageDll(string fromFullPath, string toFullPath)
+        public void CopyFile(string fromFullPath, string toFullPath)
         {
             this.writer.Copy(fromFullPath, toFullPath);
         }
