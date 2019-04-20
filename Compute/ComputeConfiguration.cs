@@ -13,19 +13,22 @@ namespace Compute
 
         private ComputeConfiguration()
         {
-            this.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(this.NumberOfContainersToStart));
+            this.ContainerRelativeFilePath = this.GetConfigValue(nameof(this.ContainerRelativeFilePath));
+            this.ContainerFullFilePath = this.GetFullPath(this.ContainerRelativeFilePath);
 
-            this.MinPort = this.GetConfigValue<ushort>(nameof(this.MinPort));
             this.MaxPort = this.GetConfigValue<ushort>(nameof(this.MaxPort));
+            this.MinPort = this.GetConfigValue<ushort>(nameof(this.MinPort));
 
-            this.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.PackageRelativeFolderPath));
-            this.PackageFullFolderPath = this.GetFullPath(this.PackageRelativeFolderPath);
+            this.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(this.NumberOfContainersToStart));
 
             this.PackageConfigFileName = this.GetConfigValue(nameof(this.PackageConfigFileName));
             this.PackageDllFileName = this.GetConfigValue(nameof(this.PackageDllFileName));
 
-            this.ContainerRelativeFilePath = this.GetConfigValue(nameof(this.ContainerRelativeFilePath));
-            this.ContainerFullFilePath = this.GetFullPath(this.ContainerRelativeFilePath);
+            this.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.PackageRelativeFolderPath));
+            this.PackageFullFolderPath = this.GetFullPath(this.PackageRelativeFolderPath);
+
+            this.PackageTempRelativeFolderPath = this.GetConfigValue(nameof(this.PackageTempRelativeFolderPath));
+            this.PackageTempFullFolderPath = this.GetFullPath(this.PackageTempRelativeFolderPath);
         }
 
         /// <summary>
@@ -42,6 +45,8 @@ namespace Compute
         public string PackageDllFileName { get; }
         public string PackageFullFolderPath { get; }
         public string PackageRelativeFolderPath { get; }
+        public string PackageTempRelativeFolderPath { get; }
+        public string PackageTempFullFolderPath { get; }
 
         public override string ToString()
         {
