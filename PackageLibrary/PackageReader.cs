@@ -7,6 +7,10 @@ namespace PackageLibrary
     {
         private readonly IXDocumentLoader xDocLoader;
 
+        /// <summary>
+        /// Constructs package reader object
+        /// </summary>
+        /// <param name="loader">Loader to use when reading package (will use default if null)</param>
         public PackageReader(IXDocumentLoader loader = null)
         {
             this.xDocLoader = loader ?? new XDocumentLoader();

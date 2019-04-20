@@ -1,12 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PackageLibrary
+﻿namespace PackageLibrary
 {
     public class PackageManager
     {
+        private readonly IPackageReader reader;
+        private readonly IPackageWriter writer;
+
+        /// <summary>
+        /// Constructs package reader object
+        /// </summary>
+        /// <param name="reader">Reader to use when reading package (will use default if null)</param>
+        /// <param name="writer">Writer to use when reading package (will use default if null)</param>
+        public PackageManager(IPackageReader reader = null, IPackageWriter writer = null)
+        {
+            this.reader = reader ?? new PackageReader();
+            this.writer = writer ?? new PackageWriter();
+        }
+
+        public PackageReaderResult ReadPackage(string packageConfigurationPath)
+        {
+            return this.reader.ReadPackage(packageConfigurationPath);
+        }
+
+        public void DeletePackage(string packageFolderFullPath)
+        {
+            this.writer.Delete(packageFolderFullPath);
+        }
+
+        public void CopyPackageDll(string fromFullPath, string toFullPath)
+        {
+            this.writer.Copy(fromFullPath, toFullPath);
+        }
     }
 }

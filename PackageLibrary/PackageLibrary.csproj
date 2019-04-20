@@ -43,10 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IPackageReader.cs" />
+    <Compile Include="IPackageWriter.cs" />
     <Compile Include="IXDocumentLoader.cs" />
     <Compile Include="PackageManager.cs" />
     <Compile Include="PackageReader.cs" />
     <Compile Include="PackageReaderResult.cs" />
+    <Compile Include="PackageWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XDocumentLoader.cs" />
   </ItemGroup>
