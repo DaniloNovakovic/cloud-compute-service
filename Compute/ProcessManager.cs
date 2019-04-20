@@ -41,6 +41,7 @@ namespace Compute
                 this.SafelyCloseProcess(containerProcess.Process);
             }
             this.ContainerProcessDict.Clear();
+            this.processManagerPortsAvailability.Clear();
         }
 
         private ushort? FindAvailablePortInClosedInterval(ushort minValue, ushort maxValue)
@@ -77,7 +78,6 @@ namespace Compute
                 var containerProcess = this.ContainerProcessDict[process.Id];
                 this.processManagerPortsAvailability[containerProcess.Port] = true;
                 this.ContainerProcessDict.Remove(process.Id);
-                Trace.TraceInformation($"Container process with port={containerProcess.Port}, id={process.Id}, name={process.ProcessName} has just closed!");
             }
         }
 
@@ -98,6 +98,7 @@ namespace Compute
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
             newProcess.EnableRaisingEvents = true;
             newProcess.Exited += this.OnProcessExit;
+            this.processManagerPortsAvailability[port] = false;
             return new ContainerProcess(newProcess, port);
         }
 
@@ -107,7 +108,6 @@ namespace Compute
             {
                 this.SafelyCloseProcess(containerToClose.Process);
             }
-
             this.ContainerProcessDict[containerProcess.Process.Id] = containerProcess;
         }
     }

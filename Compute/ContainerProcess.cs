@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Compute
 {
-    public class ContainerProcess
+    internal class ContainerProcess
     {
         public Process Process { get; }
         public ushort Port { get; }
