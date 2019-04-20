@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using Common;
 
 namespace Container
@@ -12,13 +14,12 @@ namespace Container
         /// <returns>IWorker interface that loaded assembly implemented</returns>
         public IWorker LoadAssembly(string assemblyName)
         {
-            var domain = AppDomain.CreateDomain("WorkerDomain");
-            var type = typeof(IWorker);
-            if (!(domain.CreateInstanceFromAndUnwrap(assemblyName, type.Name) is IWorker runnable))
-            {
-                throw new BadImageFormatException($"Assembly specified at {assemblyName} does not implement {type.Name} interface");
-            }
-            return runnable;
+            var assembly = Assembly.LoadFrom(assemblyName);
+            var typeInfo = assembly
+                .DefinedTypes
+                .FirstOrDefault(currType => currType.ImplementedInterfaces.Any(implementedType => implementedType.Name == typeof(IWorker).Name));
+            var type = typeInfo.UnderlyingSystemType;
+            return (IWorker)Activator.CreateInstance(type);
         }
     }
 }
