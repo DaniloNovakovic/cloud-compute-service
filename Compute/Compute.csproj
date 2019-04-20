@@ -54,6 +54,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{BAA11941-155F-4A24-987D-B86BD9B6A690}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PackageLibrary\PackageLibrary.csproj">
       <Project>{C2DB594A-274C-4333-A4C9-E9337EC6DC1E}</Project>
       <Name>PackageLibrary</Name>

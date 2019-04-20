@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using Common;
 using PackageLibrary;
+using System.Reflection;
 
 namespace Compute
 {
@@ -23,15 +27,11 @@ namespace Compute
             var package = PeriodicallyCheckForValidPackage(config, packageManager);
             Debug.WriteLine(package);
 
+            var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
             string sourceDllFullPath = Path.Combine(config.PackageFullFolderPath, package.AssemblyName);
-            var ports = processManager.GetAllContainerPorts();
-            foreach (ushort port in ports)
-            {
-                Task.Factory.StartNew((dynamic dobj) =>
-                {
-                    SendLoadSignalToContainers(dobj.port);
-                }, new { port });
-            }
+            var taskList = LoadAssemblies(config, packageManager, ports, sourceDllFullPath);
+
+            Task.WhenAll(taskList).GetAwaiter().GetResult();
 
             Console.WriteLine("Press ENTER to exit...");
             Console.ReadLine();
@@ -39,9 +39,46 @@ namespace Compute
             processManager.StopAllProcesses();
         }
 
-        private static void SendLoadSignalToContainers(int port)
+        private static List<Task> LoadAssemblies(ComputeConfiguration config, PackageManager packageManager, List<ushort> ports, string sourceDllFullPath)
         {
-            // TODO: Form WCF Channel factory and call Load method on proxy
+            var taskList = new List<Task>();
+            foreach (ushort port in ports)
+            {
+                string destinationDllFullPath = Path.Combine(config.PackageFullFolderPath, $"JobWorker_{port}.dll");
+                packageManager.CopyFile(sourceDllFullPath, destinationDllFullPath);
+
+                taskList.Add(Task.Factory.StartNew((dynamic dobj) =>
+                {
+                    SendLoadSignalToContainers(dobj.port, dobj.assemblyPath);
+                }, new { port, assemblyPath = destinationDllFullPath }));
+            }
+
+            return taskList;
+        }
+
+        private static void SendLoadSignalToContainers(int port, string assemblyPath)
+        {
+            Thread.Sleep(1000);
+
+            string remoteAddress = $"net.tcp://localhost:{port}/{typeof(IContainerManagement).Name}";
+            while (true)
+            {
+                try
+                {
+                    var channelFactory = new ChannelFactory<IContainerManagement>(new NetTcpBinding(), remoteAddress);
+                    var proxy = channelFactory.CreateChannel();
+                    string result = proxy.Load(assemblyPath);
+                    Console.WriteLine(result);
+                    channelFactory.Close();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex.Message);
+                }
+
+                Thread.Sleep(1000);
+            }
         }
 
         /// <summary>
