@@ -110,5 +110,17 @@ namespace Compute
             }
             this.ContainerProcessDict[containerProcess.Process.Id] = containerProcess;
         }
+
+        private class ContainerProcess
+        {
+            public ContainerProcess(Process process, ushort port)
+            {
+                this.Process = process ?? throw new ArgumentNullException(nameof(process));
+                this.Port = port;
+            }
+
+            public ushort Port { get; }
+            public Process Process { get; }
+        }
     }
 }
