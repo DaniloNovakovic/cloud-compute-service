@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Text.RegularExpressions;
 using System.Xml.XPath;
 
 namespace PackageLibrary
@@ -38,6 +39,9 @@ namespace PackageLibrary
             {
                 throw new ConfigurationErrorsException($"'<assembly><name>Value</name></assembly>' is missing in {packageConfigurationPath}");
             }
+
+            if (!Regex.IsMatch(assemblyName, @".*\.dll$"))
+                assemblyName += ".dll";
 
             return new PackageReaderResult()
             {
