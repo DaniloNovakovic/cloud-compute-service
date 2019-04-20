@@ -17,14 +17,20 @@ namespace Container.Tests
         [Test]
         public void CheckHealth_WhenCalled_ReturnHealthy()
         {
-            Assert.That(this.management.CheckHealth(), Is.EqualTo("Healthy").IgnoreCase);
+            Assert.That(this.management.CheckHealth(), Does.Contain("Healthy").IgnoreCase);
         }
 
         [Test]
-        public void Load_AssemblyIsLoaded_CallsStartMethodFromAssembly()
+        public void Constructor_OnContainerManagementIsLoaded_ContainerIdIsNotNullOrWhitespace()
+        {
+            Assert.That(string.IsNullOrWhiteSpace(ContainerManagement.ContainerId), Is.False);
+        }
+
+        [Test]
+        public void Load_AssemblyIsLoaded_CallsStartMethodFromAssemblyWithContainerId()
         {
             this.management.Load(this.defaultAssemblyName);
-            this.workerMock.Verify(worker => worker.Start(It.IsNotNull<string>()));
+            this.workerMock.Verify(worker => worker.Start(It.Is<string>(id => id == ContainerManagement.ContainerId)));
         }
 
         [Test]

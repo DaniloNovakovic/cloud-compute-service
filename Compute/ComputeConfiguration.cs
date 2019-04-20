@@ -21,6 +21,9 @@ namespace Compute
             this.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.PackageRelativeFolderPath));
             this.PackageFullFolderPath = this.GetFullPath(this.PackageRelativeFolderPath);
 
+            this.PackageConfigFileName = this.GetConfigValue(nameof(this.PackageConfigFileName));
+            this.PackageDllFileName = this.GetConfigValue(nameof(this.PackageDllFileName));
+
             this.ContainerRelativeFilePath = this.GetConfigValue(nameof(this.ContainerRelativeFilePath));
             this.ContainerFullFilePath = this.GetFullPath(this.ContainerRelativeFilePath);
         }
@@ -35,6 +38,8 @@ namespace Compute
         public ushort MaxPort { get; }
         public ushort MinPort { get; }
         public int NumberOfContainersToStart { get; }
+        public string PackageConfigFileName { get; }
+        public string PackageDllFileName { get; }
         public string PackageFullFolderPath { get; }
         public string PackageRelativeFolderPath { get; }
 

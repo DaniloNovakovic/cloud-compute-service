@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyLoader.cs" />
     <Compile Include="ContainerManagement.cs" />
     <Compile Include="IAssemblyLoader.cs" />
     <Compile Include="Program.cs" />

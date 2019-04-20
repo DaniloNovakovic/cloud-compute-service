@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Common;
 
@@ -13,6 +14,7 @@ namespace Container
         private static void Main(string[] args)
         {
             ushort port = GetPortFromArgs(args) ?? 10100;
+            ContainerManagement.ContainerId = port.ToString();
             var server = new Server(port, typeof(ContainerManagement), typeof(IContainerManagement));
             server.Open();
 

@@ -8,7 +8,13 @@ namespace Container
         private readonly IAssemblyLoader assemblyLoader;
         private IWorker worker;
 
-        public ContainerManagement()
+        static ContainerManagement()
+        {
+            var randomGenerator = new Random();
+            ContainerId = randomGenerator.Next(10100, ushort.MaxValue).ToString();
+        }
+
+        public ContainerManagement() : this(new AssemblyLoader())
         {
         }
 
@@ -16,6 +22,8 @@ namespace Container
         {
             this.assemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
         }
+
+        public static string ContainerId { get; internal set; }
 
         public string CheckHealth()
         {
@@ -32,7 +40,7 @@ namespace Container
             try
             {
                 this.worker = this.assemblyLoader.LoadAssembly(assemblyName);
-                this.worker.Start("1"); // TODO: Find a way to send proper id
+                this.worker.Start(ContainerId);
                 return "[SUCCESS] Successfully loaded assembly!";
             }
             catch (Exception ex)
