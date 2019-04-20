@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Compute
 {
@@ -14,7 +15,15 @@ namespace Compute
         {
         }
 
+        /// <summary>
+        /// Returns singleton instance of ProcessManager class
+        /// </summary>
         public static ProcessManager Instance => processManager.Value;
+
+        public IEnumerable<ushort> GetAllContainerPorts()
+        {
+            return this.ContainerProcessDict.Values.Select(container => container.Port);
+        }
 
         /// <summary>
         /// Starts number of containers as defined in config file

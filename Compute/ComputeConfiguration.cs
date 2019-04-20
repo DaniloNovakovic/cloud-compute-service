@@ -22,13 +22,14 @@ namespace Compute
             this.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(this.NumberOfContainersToStart));
 
             this.PackageConfigFileName = this.GetConfigValue(nameof(this.PackageConfigFileName));
-            this.PackageDllFileName = this.GetConfigValue(nameof(this.PackageDllFileName));
 
             this.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.PackageRelativeFolderPath));
             this.PackageFullFolderPath = this.GetFullPath(this.PackageRelativeFolderPath);
 
             this.PackageTempRelativeFolderPath = this.GetConfigValue(nameof(this.PackageTempRelativeFolderPath));
             this.PackageTempFullFolderPath = this.GetFullPath(this.PackageTempRelativeFolderPath);
+
+            this.PackageAcquisitionIntervalMilliseconds = this.GetConfigValue<int>(nameof(this.PackageAcquisitionIntervalMilliseconds));
         }
 
         /// <summary>
@@ -41,12 +42,12 @@ namespace Compute
         public ushort MaxPort { get; }
         public ushort MinPort { get; }
         public int NumberOfContainersToStart { get; }
+        public int PackageAcquisitionIntervalMilliseconds { get; }
         public string PackageConfigFileName { get; }
-        public string PackageDllFileName { get; }
         public string PackageFullFolderPath { get; }
         public string PackageRelativeFolderPath { get; }
-        public string PackageTempRelativeFolderPath { get; }
         public string PackageTempFullFolderPath { get; }
+        public string PackageTempRelativeFolderPath { get; }
 
         public override string ToString()
         {

@@ -10,5 +10,17 @@ namespace PackageLibrary
     {
         public int? NumberOfInstances { get; set; } = null;
         public string AssemblyName { get; set; } = string.Empty;
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+
+            foreach (var property in this.GetType().GetProperties().Where(prop => prop.PropertyType != this.GetType()))
+            {
+                builder.Append(property.Name).Append(" = ").Append(property.GetValue(this)).AppendLine();
+            }
+
+            return builder.ToString();
+        }
     }
 }
