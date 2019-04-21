@@ -38,20 +38,27 @@ namespace Compute
         private static void OnContainerFailure(AssemblyInfo assembly, Exception exception)
         {
             Console.Error.WriteLine($"{assembly.Port}: Container failed/has closed... Exception msg: " + exception.Message);
-            ushort port;
 
-            var freeContainerPorts = processManager.GetAllFreeContainerPorts();
-            if (freeContainerPorts.Any()) // There is free container
+            ushort port;
+            Task sendLoadSignalTask;
+
+            lock (processManager)
             {
-                port = freeContainerPorts.First();
-                ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath).Wait();
-                processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+                if (freeContainerPorts.Any()) // There is free container
+                {
+                    port = freeContainerPorts.First();
+                    sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath);
+                    processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                }
+                else // There isn't any free container
+                {
+                    port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath);
+                }
             }
-            else // There isn't any free container
-            {
-                port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath).Wait();
-            }
+
+            sendLoadSignalTask.Wait();
 
             Task.Factory.StartNew(() =>
             {
