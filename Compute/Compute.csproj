@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ContainerController.cs" />
     <Compile Include="ComputeConfiguration.cs" />
     <Compile Include="ComputeConfigurationItem.cs" />
     <Compile Include="PackageLibrary\IPackageReader.cs" />
