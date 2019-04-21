@@ -35,6 +35,25 @@ namespace Compute
                 .ToList();
         }
 
+        public AssemblyInfo GetAssemblyInfo(ushort port)
+        {
+            var retVal = new AssemblyInfo();
+            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess))
+            {
+                retVal.Port = containerProcess.Port;
+                retVal.AssemblyFullPath = containerProcess.AssemblyFullPath;
+            }
+            return retVal;
+        }
+
+        public ushort StartContainerProcess(ComputeConfigurationItem config)
+        {
+            ushort port = this.GetNextPort(config.MinPort, config);
+            var newContainerProcess = this.StartNewContainerProcess(port, config);
+            this.StoreContainerProcess(newContainerProcess);
+            return port;
+        }
+
         /// <summary>
         /// Starts number of containers as defined in config file
         /// </summary>
@@ -48,14 +67,6 @@ namespace Compute
                 this.StoreContainerProcess(newContainerProcess);
                 currPort = this.GetNextPort(currPort, config);
             }
-        }
-
-        public ushort StartContainerProcess(ComputeConfigurationItem config)
-        {
-            ushort port = this.GetNextPort(config.MinPort, config);
-            var newContainerProcess = this.StartNewContainerProcess(port, config);
-            this.StoreContainerProcess(newContainerProcess);
-            return port;
         }
 
         /// <summary>
@@ -74,11 +85,12 @@ namespace Compute
         /// <summary>
         /// Attempts to take container with given port. Returns true upon success, false upon failure
         /// </summary>
-        public bool TakeContainer(ushort port)
+        public bool TakeContainer(ushort port, string assemblyFullPath = null)
         {
             if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
             {
                 containerProcess.IsContainerFree = false;
+                containerProcess.AssemblyFullPath = assemblyFullPath;
                 return true;
             }
             return false;
@@ -111,7 +123,7 @@ namespace Compute
 
         private void OnContainerFaulted(object sender, ContainerHealthMonitorEventArgs e)
         {
-            if (ContainerProcessDictByPort.TryGetValue(e.Port, out var containerProcess))
+            if (this.ContainerProcessDictByPort.TryGetValue(e.Port, out var containerProcess))
             {
                 this.ContainerProcessDictByPort.Remove(containerProcess.Port);
                 this.ContainerProcessDictById.Remove(containerProcess.Process.Id);
@@ -125,7 +137,7 @@ namespace Compute
                 this.ContainerProcessDictByPort.Remove(containerProcess.Port);
             }
 
-            if (!processToClose.CloseMainWindow())
+            if (!processToClose.HasExited && !processToClose.CloseMainWindow())
             {
                 processToClose.Kill();
             }
@@ -172,6 +184,7 @@ namespace Compute
                 this.Port = port;
             }
 
+            public string AssemblyFullPath { get; set; } = string.Empty;
             public bool IsContainerFree { get; set; } = true;
             public ushort Port { get; }
             public Process Process { get; }

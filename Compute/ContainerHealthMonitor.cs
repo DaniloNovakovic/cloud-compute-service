@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.Threading;
+using System.Threading.Tasks;
 using Common;
 
 namespace Compute
@@ -12,11 +14,15 @@ namespace Compute
         {
         }
 
-        public ContainerHealthMonitorEventArgs(ushort port)
+        public ContainerHealthMonitorEventArgs(ushort port, string assemblyFullPath = "", Exception exception = null)
         {
             this.Port = port;
+            this.AssemblyFullPath = assemblyFullPath;
+            this.Exception = exception;
         }
 
+        public string AssemblyFullPath { get; set; }
+        public Exception Exception { get; set; }
         public ushort Port { get; set; }
     }
 
@@ -40,12 +46,21 @@ namespace Compute
         /// Starts a detached task that will periodically check health for all container processes
         /// </summary>
         /// <exception cref="OutOfMemoryException"></exception>
-        public void Run()
+        public void Start()
         {
             if (this.healthCheckerThread is null)
             {
                 this.healthCheckerThread = new Thread(this.PeriodicallyCheckHealth);
+                this.healthCheckerThread.IsBackground = true;
                 this.healthCheckerThread.Start();
+            }
+        }
+
+        public void Stop()
+        {
+            if (this.healthCheckerThread?.IsAlive ?? false)
+            {
+                this.healthCheckerThread.Abort();
             }
         }
 
@@ -61,9 +76,10 @@ namespace Compute
             channelFactory.Close();
         }
 
-        private void OnContainerFaulted(ushort port)
+        private void OnContainerFaulted(ushort port, Exception ex)
         {
-            ContainerFaulted?.Invoke(this, new ContainerHealthMonitorEventArgs(port));
+            var assemblyInfo = ProcessManager.Instance.GetAssemblyInfo(port);
+            ContainerFaulted?.Invoke(this, new ContainerHealthMonitorEventArgs(port, assemblyInfo.AssemblyFullPath, ex));
         }
 
         private void PeriodicallyCheckHealth()
@@ -71,19 +87,24 @@ namespace Compute
             var processManager = ProcessManager.Instance;
             while (true)
             {
+                var taskList = new List<Task>();
                 foreach (ushort port in processManager.GetAllContainerPorts())
                 {
-                    try
+                    taskList.Add(Task.Factory.StartNew((dynamic dobj) =>
                     {
-                        this.CheckHealth(port);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError(port + ": " + ex.Message);
-                        this.OnContainerFaulted(port);
-                    }
+                        try
+                        {
+                            this.CheckHealth(dobj.port);
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.TraceError($"{dobj.port} : {ex.Message}");
+                            this.OnContainerFaulted(dobj.port, ex);
+                        }
+                    }, new { port }));
                 }
                 Thread.Sleep(1000);
+                Task.WhenAll(taskList).GetAwaiter().GetResult();
             }
         }
     }
