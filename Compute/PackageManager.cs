@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Threading;
@@ -22,34 +23,30 @@ namespace Compute
         }
 
         /// <summary>
-        /// Runs until valid package is found (blocking method)
+        /// Copies sourceDll to new file for each provided port.
         /// </summary>
+        /// <param name="sourceDllFullPath"></param>
+        /// <param name="destinationFolder"></param>
+        /// <param name="ports"></param>
+        /// <returns>List of successfully copied assemblies</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public PackageReaderResult PeriodicallyCheckForValidPackage(ComputeConfigurationItem configItem)
+        public List<AssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, List<ushort> ports)
         {
-            string packageConfigPath = Path.Combine(configItem.PackageFullFolderPath, configItem.PackageConfigFileName);
-            while (true)
+            var destinationPaths = new List<AssemblyInfo>();
+            foreach (ushort port in ports)
             {
-                try
+                string destinationDllFullPath = Path.Combine(destinationFolder, $"JobWorker_{port}.dll");
+                if (this.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
-                    return this.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: configItem.NumberOfContainersToStart);
-                }
-                catch (ConfigurationException configEx)
-                {
-                    Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
-                    if (this.DeletePackage(configItem.PackageFullFolderPath))
+                    destinationPaths.Add(new AssemblyInfo()
                     {
-                        Console.WriteLine($"Successfully deleted {configItem.PackageFullFolderPath}");
-                    }
+                        Port = port,
+                        AssemblyFullPath = destinationDllFullPath
+                    });
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Exception occured while trying to read package. Reason: " + ex.Message);
-                }
-
-                Thread.Sleep(configItem.PackageAcquisitionIntervalMilliseconds);
             }
+            return destinationPaths;
         }
 
         /// <summary>
@@ -85,6 +82,37 @@ namespace Compute
             {
                 Console.Error.WriteLine(ex.Message);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Runs until valid package is found (blocking method)
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public PackageReaderResult PeriodicallyCheckForValidPackage(ComputeConfigurationItem configItem)
+        {
+            string packageConfigPath = Path.Combine(configItem.PackageFullFolderPath, configItem.PackageConfigFileName);
+            while (true)
+            {
+                try
+                {
+                    return this.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: configItem.NumberOfContainersToStart);
+                }
+                catch (ConfigurationException configEx)
+                {
+                    Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
+                    if (this.DeletePackage(configItem.PackageFullFolderPath))
+                    {
+                        Console.WriteLine($"Successfully deleted {configItem.PackageFullFolderPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Exception occured while trying to read package. Reason: " + ex.Message);
+                }
+
+                Thread.Sleep(configItem.PackageAcquisitionIntervalMilliseconds);
             }
         }
 
