@@ -8,8 +8,8 @@ namespace Compute
     internal sealed class ProcessManager
     {
         private static readonly Lazy<ProcessManager> processManager = new Lazy<ProcessManager>(() => new ProcessManager());
-        private readonly Dictionary<int, ContainerProcess> ContainerProcessDict = new Dictionary<int, ContainerProcess>();
-        private readonly Dictionary<ushort, bool> processManagerPortsAvailability = new Dictionary<ushort, bool>();
+        private readonly Dictionary<int, ContainerProcess> ContainerProcessDictById = new Dictionary<int, ContainerProcess>();
+        private readonly Dictionary<ushort, ContainerProcess> ContainerProcessDictByPort = new Dictionary<ushort, ContainerProcess>();
 
         private ProcessManager()
         {
@@ -22,7 +22,7 @@ namespace Compute
 
         public IEnumerable<ushort> GetAllContainerPorts()
         {
-            return this.ContainerProcessDict.Values.Select(container => container.Port);
+            return this.ContainerProcessDictByPort.Keys;
         }
 
         /// <summary>
@@ -45,12 +45,12 @@ namespace Compute
         /// </summary>
         public void StopAllProcesses()
         {
-            foreach (var containerProcess in this.ContainerProcessDict.Values)
+            foreach (var containerProcess in this.ContainerProcessDictById.Values)
             {
                 this.SafelyCloseProcess(containerProcess.Process);
             }
-            this.ContainerProcessDict.Clear();
-            this.processManagerPortsAvailability.Clear();
+            this.ContainerProcessDictById.Clear();
+            this.ContainerProcessDictByPort.Clear();
         }
 
         private ushort? FindAvailablePortInClosedInterval(ushort minValue, ushort maxValue)
@@ -75,23 +75,26 @@ namespace Compute
 
         private bool IsPortAvailable(ushort port)
         {
-            return this.processManagerPortsAvailability.TryGetValue(port, out bool value)
-                ? value
-                : (this.processManagerPortsAvailability[port] = true);
+            return !this.ContainerProcessDictByPort.ContainsKey(port);
         }
 
         private void OnProcessExit(object sender, EventArgs e)
         {
             if (sender is Process process)
             {
-                var containerProcess = this.ContainerProcessDict[process.Id];
-                this.processManagerPortsAvailability[containerProcess.Port] = true;
-                this.ContainerProcessDict.Remove(process.Id);
+                var containerProcess = this.ContainerProcessDictById[process.Id];
+                this.ContainerProcessDictByPort.Remove(containerProcess.Port);
+                this.ContainerProcessDictById.Remove(process.Id);
             }
         }
 
         private void SafelyCloseProcess(Process processToClose)
         {
+            if (this.ContainerProcessDictById.TryGetValue(processToClose.Id, out var containerProcess))
+            {
+                this.ContainerProcessDictByPort.Remove(containerProcess.Port);
+            }
+
             if (!processToClose.CloseMainWindow())
             {
                 processToClose.Kill();
@@ -102,22 +105,35 @@ namespace Compute
             }
         }
 
+        /// <summary>
+        /// Starts up new container process with given port as it's argument
+        /// </summary>
+        /// <returns>New container process</returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="System.IO.FileNotFoundException"></exception>
+        /// <exception cref="ObjectDisposedException"></exception>
+        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
         private ContainerProcess StartNewContainerProcess(ushort port, ComputeConfigurationItem config)
         {
+            if (!this.IsPortAvailable(port))
+            {
+                throw new InvalidOperationException($"port={port} is already taken by another process!");
+            }
+
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
             newProcess.EnableRaisingEvents = true;
             newProcess.Exited += this.OnProcessExit;
-            this.processManagerPortsAvailability[port] = false;
-            return new ContainerProcess(newProcess, port);
+            this.ContainerProcessDictByPort[port] = new ContainerProcess(newProcess, port);
+            return this.ContainerProcessDictByPort[port];
         }
 
         private void StoreContainerProcess(ContainerProcess containerProcess)
         {
-            if (this.ContainerProcessDict.TryGetValue(containerProcess.Process.Id, out var containerToClose))
+            if (this.ContainerProcessDictById.TryGetValue(containerProcess.Process.Id, out var containerToClose))
             {
                 this.SafelyCloseProcess(containerToClose.Process);
             }
-            this.ContainerProcessDict[containerProcess.Process.Id] = containerProcess;
+            this.ContainerProcessDictById[containerProcess.Process.Id] = containerProcess;
         }
 
         private class ContainerProcess
