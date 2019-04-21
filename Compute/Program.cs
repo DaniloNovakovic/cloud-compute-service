@@ -26,7 +26,6 @@ namespace Compute
                 var validPackage = StartPeriodicCheckUntilFirstValidPackageIsFound(configItem);
                 var destinationAssemblies = CopyAssemblies(configItem, validPackage);
                 SendLoadAssemblySignalToContainers(destinationAssemblies);
-                //StartPeriodHealthChecksInTheBackground(destinationAssemblies);
             }
             catch (Exception ex)
             {
