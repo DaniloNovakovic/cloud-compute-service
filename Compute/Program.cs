@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Common;
-using PackageLibrary;
 using System.Reflection;
 
 namespace Compute
@@ -23,19 +22,25 @@ namespace Compute
             var processManager = ProcessManager.Instance;
             processManager.StartContainerProcesses(config);
 
-            var packageManager = new PackageManager();
-            var package = PeriodicallyCheckForValidPackage(config, packageManager);
-            Debug.WriteLine(package);
+            try
+            {
+                var packageManager = new PackageManager();
+                var package = PeriodicallyCheckForValidPackage(config, packageManager);
+                Debug.WriteLine(package);
 
-            var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
-            string sourceDllFullPath = Path.Combine(config.PackageFullFolderPath, package.AssemblyName);
-            var taskList = LoadAssemblies(config, packageManager, ports, sourceDllFullPath);
+                var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
+                string sourceDllFullPath = Path.Combine(config.PackageFullFolderPath, package.AssemblyName);
+                var taskList = LoadAssemblies(config, packageManager, ports, sourceDllFullPath);
 
-            Task.WhenAll(taskList).GetAwaiter().GetResult();
+                Task.WhenAll(taskList).GetAwaiter().GetResult();
 
-            Console.WriteLine("Press ENTER to exit...");
-            Console.ReadLine();
-
+                Console.WriteLine("Press ENTER to exit...");
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: " + ex.Message);
+            }
             processManager.StopAllProcesses();
         }
 
