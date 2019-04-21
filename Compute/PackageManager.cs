@@ -20,14 +20,40 @@ namespace Compute
             this.fileIO = fileIO ?? new FileIO();
         }
 
-        public void CopyFile(string fromFullPath, string toFullPath)
+        /// <summary>
+        /// Attempts to copy file. Returns true upon success.
+        /// </summary>
+        /// <returns>True upon success, false upon failure</returns>
+        public bool CopyFile(string fromFullPath, string toFullPath)
         {
-            this.fileIO.CopyFile(fromFullPath, toFullPath);
+            try
+            {
+                this.fileIO.CopyFile(fromFullPath, toFullPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return false;
+            }
         }
 
-        public void DeletePackage(string packageFolderFullPath)
+        /// <summary>
+        /// Attempts to delete package folder recursively. Returns true upon success.
+        /// </summary>
+        /// <returns>True upon success, false upon failure</returns>
+        public bool DeletePackage(string packageFolderFullPath)
         {
-            this.fileIO.DeleteFolder(packageFolderFullPath);
+            try
+            {
+                this.fileIO.DeleteFolder(packageFolderFullPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return false;
+            }
         }
 
         /// <summary>
