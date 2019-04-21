@@ -35,7 +35,7 @@ namespace Compute
             processManager.StopAllProcesses();
         }
 
-        private static bool OnContainerFailure(AssemblyInfo assembly, Exception exception)
+        private static void OnContainerFailure(AssemblyInfo assembly, Exception exception)
         {
             Console.Error.WriteLine($"{assembly.Port}: Container failed/has closed... Exception msg: " + exception.Message);
             ushort port;
@@ -44,25 +44,23 @@ namespace Compute
             if (freeContainerPorts.Any()) // There is free container
             {
                 port = freeContainerPorts.First();
-                ContainerController.SendLoadSignalToContainer(port, assembly.AssemblyFullPath);
+                ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath).Wait();
                 processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
             }
             else // There isn't any free container
             {
                 port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                ContainerController.SendLoadSignalToContainer(port, assembly.AssemblyFullPath);
+                ContainerController.SendLoadSignalToContainerAsync(port, assembly.AssemblyFullPath).Wait();
             }
 
-            Task.Factory.StartNew((dynamic dobj) =>
+            Task.Factory.StartNew(() =>
             {
-                ContainerController.StartPeriodicHealthCheck((AssemblyInfo)dobj, OnContainerFailure);
-            }, new AssemblyInfo()
-            {
-                Port = port,
-                AssemblyFullPath = assembly.AssemblyFullPath
+                ContainerController.StartPeriodicHealthCheck(new AssemblyInfo()
+                {
+                    Port = port,
+                    AssemblyFullPath = assembly.AssemblyFullPath
+                }, OnContainerFailure).Wait();
             });
-
-            return true;
         }
 
         private static List<AssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
@@ -87,7 +85,7 @@ namespace Compute
         {
             Console.WriteLine("Sending load assembly signal to requested number of container processes...");
 
-            ContainerController.SendLoadSignalToContainers(destinationPaths).GetAwaiter().GetResult();
+            ContainerController.SendLoadSignalToContainersAsync(destinationPaths).GetAwaiter().GetResult();
 
             Console.WriteLine("All of the processes have finished loading assemblies");
         }
@@ -99,7 +97,7 @@ namespace Compute
             {
                 Task.Factory.StartNew((object tempAssembly) =>
                 {
-                    ContainerController.StartPeriodicHealthCheck((AssemblyInfo)tempAssembly, OnContainerFailure);
+                    ContainerController.StartPeriodicHealthCheck((AssemblyInfo)tempAssembly, OnContainerFailure).Wait();
                 }, assembly.Clone());
             }
         }
@@ -108,7 +106,7 @@ namespace Compute
         {
             Console.WriteLine("Starting periodic check until first valid package is found...");
 
-            var package = packageManager.PeriodicallyCheckForValidPackage(configItem);
+            var package = packageManager.PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
             Debug.WriteLine(package);
             return package;
         }

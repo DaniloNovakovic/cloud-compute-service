@@ -22,7 +22,7 @@ namespace Compute
 
         public IEnumerable<ushort> GetAllContainerPorts()
         {
-            return this.ContainerProcessDictByPort.Keys;
+            return this.ContainerProcessDictByPort.Keys.ToList();
         }
 
         public IEnumerable<ushort> GetAllFreeContainerPorts()
@@ -30,7 +30,8 @@ namespace Compute
             return this.ContainerProcessDictByPort
                 .Values
                 .Where(container => container.IsContainerFree)
-                .Select(container => container.Port);
+                .Select(container => container.Port)
+                .ToList();
         }
 
         /// <summary>
