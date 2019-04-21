@@ -11,40 +11,33 @@ namespace Compute.Tests
         private readonly string defaultConfigPath = "myPath.xml";
         private readonly int defaultNumberOfInstances = 2;
         private readonly int maxAllowedNumberOfInstances = 4;
+        private Mock<IFileIO> fileIOMock;
         private PackageManager packageManager;
         private Mock<IPackageReader> readerMock;
         private PackageReaderResult validReaderResult;
-        private Mock<IPackageWriter> writerMock;
 
         [Test()]
-        public void CopyFile_WhenCalled_CallsPackageWriterCopy()
+        public void CopyFile_WhenCalled_CopiesFile()
         {
             const string fromPath = "myOriginalFile.dll";
             const string toPath = "myCopiedFile.dll";
             this.packageManager.CopyFile(fromPath, toPath);
-            this.writerMock.Verify(writer => writer.Copy(fromPath, toPath));
+            this.fileIOMock.Verify(writer => writer.CopyFile(fromPath, toPath));
         }
 
         [Test()]
-        public void DeletePackage_WhenCalled_CallsPackageWriterDelete()
+        public void DeletePackage_WhenCalled_DeletesFolder()
         {
             const string packageFolder = "myPackageFolder";
             this.packageManager.DeletePackage(packageFolder);
-            this.writerMock.Verify(writer => writer.Delete(packageFolder));
+            this.fileIOMock.Verify(writer => writer.DeleteFolder(packageFolder));
         }
 
         [Test]
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase("    ")]
-        public void ReadPackage_AssemblyNameIsNullOrWhiteSpace_ThrowException(string assemblyName)
+        public void ReadPackage_AssemblyFileDoesNotExist_ThrowException()
         {
-            this.readerMock.Setup(reader => reader.ReadPackage(this.defaultConfigPath)).Returns(new PackageReaderResult()
-            {
-                AssemblyName = assemblyName,
-                NumberOfInstances = defaultNumberOfInstances
-            });
-            Assert.That(() => this.packageManager.ReadPackage(this.defaultConfigPath, this.maxAllowedNumberOfInstances), Throws.Exception);
+            this.fileIOMock.Setup(io => io.FileExists(It.IsAny<string>())).Returns(false);
+            Assert.That(() => this.packageManager.ReadPackage(this.defaultConfigPath, this.defaultNumberOfInstances), Throws.Exception);
         }
 
         [Test()]
@@ -52,7 +45,7 @@ namespace Compute.Tests
         {
             this.readerMock.Setup(reader => reader.ReadPackage(this.defaultConfigPath)).Returns(new PackageReaderResult()
             {
-                AssemblyName = "MyAssemblyName",
+                AssemblyName = defaultAssemblyName,
                 NumberOfInstances = this.maxAllowedNumberOfInstances + 1
             });
             Assert.That(() => this.packageManager.ReadPackage(this.defaultConfigPath, this.maxAllowedNumberOfInstances), Throws.Exception);
@@ -63,7 +56,7 @@ namespace Compute.Tests
         {
             this.readerMock.Setup(reader => reader.ReadPackage(this.defaultConfigPath)).Returns(new PackageReaderResult()
             {
-                AssemblyName = "myAssemblyName",
+                AssemblyName = defaultAssemblyName,
                 NumberOfInstances = -5
             });
             Assert.That(() => this.packageManager.ReadPackage(this.defaultConfigPath, this.maxAllowedNumberOfInstances), Throws.Exception);
@@ -93,15 +86,13 @@ namespace Compute.Tests
                 NumberOfInstances = defaultNumberOfInstances
             };
             this.readerMock = new Mock<IPackageReader>();
-            this.writerMock = new Mock<IPackageWriter>();
-            this.packageManager = new PackageManager(this.readerMock.Object, this.writerMock.Object);
+            this.fileIOMock = new Mock<IFileIO>();
+            this.packageManager = new PackageManager(this.readerMock.Object, this.fileIOMock.Object);
 
             this.readerMock.Setup(reader => reader.ReadPackage(It.Is<string>(str => string.IsNullOrWhiteSpace(str)))).Throws<Exception>();
             this.readerMock.Setup(reader => reader.ReadPackage(It.Is<string>(str => !string.IsNullOrWhiteSpace(str)))).Returns(this.validReaderResult);
 
-            this.writerMock.Setup(writer => writer.Delete(It.Is<string>(str => string.IsNullOrWhiteSpace(str)))).Throws<Exception>();
-            this.writerMock.Setup(writer => writer.Copy(It.Is<string>(str => string.IsNullOrWhiteSpace(str)), It.IsAny<string>())).Throws<Exception>();
-            this.writerMock.Setup(writer => writer.Copy(It.IsAny<string>(), It.Is<string>(str => string.IsNullOrWhiteSpace(str)))).Throws<Exception>();
+            this.fileIOMock.Setup(io => io.FileExists(It.Is<string>(str => !string.IsNullOrWhiteSpace(str)))).Returns(true);
         }
     }
 }

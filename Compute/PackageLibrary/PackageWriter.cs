@@ -2,16 +2,21 @@
 
 namespace Compute
 {
-    internal class PackageWriter : IPackageWriter
+    internal class FileIO : IFileIO
     {
-        public void Copy(string fromFullPath, string toFullPath)
+        public void CopyFile(string sourceFileName, string destFileName)
         {
-            File.Copy(fromFullPath, toFullPath, overwrite: true);
+            File.Copy(sourceFileName, destFileName, overwrite: true);
         }
 
-        public void Delete(string packageFolderFullPath)
+        public void DeleteFolder(string path)
         {
-            Directory.Delete(packageFolderFullPath, recursive: true);
+            Directory.Delete(path, recursive: true);
+        }
+
+        public bool FileExists(string path)
+        {
+            return File.Exists(path);
         }
     }
 }

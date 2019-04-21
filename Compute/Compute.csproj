@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="ComputeConfiguration.cs" />
     <Compile Include="PackageLibrary\IPackageReader.cs" />
-    <Compile Include="PackageLibrary\IPackageWriter.cs" />
+    <Compile Include="PackageLibrary\IFileIO.cs" />
     <Compile Include="PackageLibrary\IXDocumentLoader.cs" />
     <Compile Include="PackageLibrary\PackageManager.cs" />
     <Compile Include="PackageLibrary\PackageReader.cs" />

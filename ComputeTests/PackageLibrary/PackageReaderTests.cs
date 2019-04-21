@@ -8,18 +8,18 @@ namespace Compute.Tests
     [TestFixture]
     public class PackageReaderTests
     {
-        private readonly string defaultPackagePath = "myConfig.xml";
         private readonly string defaultAssemblyName = "MyAssembly.dll";
         private readonly int defaultNumberOfInstances = 2;
+        private readonly string defaultPackagePath = "myConfig.xml";
         private PackageReader packageReader;
         private Mock<IXDocumentLoader> xDocLoaderMock;
         private XDocument xDocValid;
 
         [Test]
-        public void ReadPackage_WhenCalled_LoadsConfigFile()
+        public void ReadPackage_ConfigIsInvalid_ThrowException()
         {
-            this.packageReader.ReadPackage(this.defaultPackagePath);
-            this.xDocLoaderMock.Verify(loader => loader.Load(this.defaultPackagePath));
+            this.xDocLoaderMock.Setup(loader => loader.Load(It.IsAny<string>())).Returns(new XDocument(new XElement("doc")));
+            Assert.That(() => this.packageReader.ReadPackage(this.defaultPackagePath), Throws.Exception);
         }
 
         [Test]
@@ -31,15 +31,14 @@ namespace Compute.Tests
         }
 
         [Test]
-        public void ReadPackage_ConfigIsInvalid_ThrowException()
+        public void ReadPackage_WhenCalled_LoadsConfigFile()
         {
-            this.xDocLoaderMock.Setup(loader => loader.Load(It.IsAny<string>())).Returns(new XDocument(new XElement("doc")));
-            Assert.That(() => this.packageReader.ReadPackage(this.defaultPackagePath), Throws.Exception);
+            this.packageReader.ReadPackage(this.defaultPackagePath);
+            this.xDocLoaderMock.Verify(loader => loader.Load(this.defaultPackagePath));
         }
 
         [SetUp]
         public void SetUp()
-
         {
             this.xDocLoaderMock = new Mock<IXDocumentLoader>();
             this.packageReader = new PackageReader(this.xDocLoaderMock.Object);
