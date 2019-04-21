@@ -35,9 +35,9 @@ namespace Compute
                 .ToList();
         }
 
-        public AssemblyInfo GetAssemblyInfo(ushort port)
+        public PackageAssemblyInfo GetAssemblyInfo(ushort port)
         {
-            var retVal = new AssemblyInfo();
+            var retVal = new PackageAssemblyInfo();
             if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess))
             {
                 retVal.Port = containerProcess.Port;

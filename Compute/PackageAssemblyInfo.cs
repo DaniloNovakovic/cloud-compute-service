@@ -2,14 +2,14 @@
 
 namespace Compute
 {
-    public class AssemblyInfo : ICloneable
+    public class PackageAssemblyInfo : ICloneable
     {
         public ushort Port { get; set; }
         public string AssemblyFullPath { get; set; }
 
         public object Clone()
         {
-            return new AssemblyInfo()
+            return new PackageAssemblyInfo()
             {
                 Port = Port,
                 AssemblyFullPath = AssemblyFullPath

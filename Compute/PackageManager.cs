@@ -31,15 +31,15 @@ namespace Compute
         /// <returns>List of successfully copied assemblies</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public List<AssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, List<ushort> ports)
+        public List<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, List<ushort> ports)
         {
-            var destinationPaths = new List<AssemblyInfo>();
+            var destinationPaths = new List<PackageAssemblyInfo>();
             foreach (ushort port in ports)
             {
                 string destinationDllFullPath = Path.Combine(destinationFolder, $"JobWorker_{port}.dll");
                 if (this.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
-                    destinationPaths.Add(new AssemblyInfo()
+                    destinationPaths.Add(new PackageAssemblyInfo()
                     {
                         Port = port,
                         AssemblyFullPath = destinationDllFullPath
