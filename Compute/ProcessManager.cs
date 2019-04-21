@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Compute
 {
-    public sealed class ProcessManager
+    internal sealed class ProcessManager
     {
         private static readonly Lazy<ProcessManager> processManager = new Lazy<ProcessManager>(() => new ProcessManager());
         private readonly Dictionary<int, ContainerProcess> ContainerProcessDict = new Dictionary<int, ContainerProcess>();
@@ -28,7 +28,7 @@ namespace Compute
         /// <summary>
         /// Starts number of containers as defined in config file
         /// </summary>
-        public void StartContainerProcesses(ComputeConfiguration config)
+        public void StartContainerProcesses(ComputeConfigurationItem config)
         {
             ushort currPort = this.GetNextPort(config.MinPort, config);
 
@@ -65,7 +65,7 @@ namespace Compute
             return null;
         }
 
-        private ushort GetNextPort(ushort prevPort, ComputeConfiguration config)
+        private ushort GetNextPort(ushort prevPort, ComputeConfigurationItem config)
         {
             ushort? currPort = this.FindAvailablePortInClosedInterval((ushort)(prevPort + 1), config.MaxPort);
             return currPort
@@ -102,7 +102,7 @@ namespace Compute
             }
         }
 
-        private ContainerProcess StartNewContainerProcess(ushort port, ComputeConfiguration config)
+        private ContainerProcess StartNewContainerProcess(ushort port, ComputeConfigurationItem config)
         {
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
             newProcess.EnableRaisingEvents = true;

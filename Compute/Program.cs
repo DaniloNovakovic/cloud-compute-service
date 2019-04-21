@@ -17,27 +17,27 @@ namespace Compute
         {
             Console.WriteLine("Loading Compute configuration...");
 
-            var config = ComputeConfiguration.Instance;
-            Debug.WriteLine(config);
+            var configItem = ComputeConfiguration.Instance.ConfigurationItem;
+            Debug.WriteLine(configItem);
 
             Console.WriteLine("Starting up container processes...");
 
             var processManager = ProcessManager.Instance;
-            processManager.StartContainerProcesses(config);
+            processManager.StartContainerProcesses(configItem);
 
             try
             {
                 Console.WriteLine("Starting periodic check until first valid package is found...");
 
                 var packageManager = new PackageManager();
-                var package = packageManager.PeriodicallyCheckForValidPackage(config);
+                var package = packageManager.PeriodicallyCheckForValidPackage(configItem);
                 Debug.WriteLine(package);
 
                 Console.WriteLine("Sending load assembly signal to requested number of container processes...");
 
                 var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
-                string sourceDllFullPath = Path.Combine(config.PackageFullFolderPath, package.AssemblyName);
-                var taskList = LoadAssemblies(config, packageManager, ports, sourceDllFullPath);
+                string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
+                var taskList = LoadAssemblies(configItem, packageManager, ports, sourceDllFullPath);
 
                 Task.WhenAll(taskList).GetAwaiter().GetResult();
 
@@ -54,12 +54,12 @@ namespace Compute
             processManager.StopAllProcesses();
         }
 
-        private static List<Task> LoadAssemblies(ComputeConfiguration config, PackageManager packageManager, List<ushort> ports, string sourceDllFullPath)
+        private static List<Task> LoadAssemblies(ComputeConfigurationItem configItem, PackageManager packageManager, List<ushort> ports, string sourceDllFullPath)
         {
             var taskList = new List<Task>();
             foreach (ushort port in ports)
             {
-                string destinationDllFullPath = Path.Combine(config.PackageFullFolderPath, $"JobWorker_{port}.dll");
+                string destinationDllFullPath = Path.Combine(configItem.PackageFullFolderPath, $"JobWorker_{port}.dll");
                 packageManager.CopyFile(sourceDllFullPath, destinationDllFullPath);
 
                 taskList.Add(Task.Factory.StartNew((dynamic dobj) =>
