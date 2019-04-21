@@ -68,7 +68,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="PackageLibrary\PackageManagerTests.cs" />
+    <Compile Include="PackageManagerTests.cs" />
     <Compile Include="PackageLibrary\PackageReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

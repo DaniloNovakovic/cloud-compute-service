@@ -25,6 +25,8 @@ namespace Compute
         /// FullPath of configuration where .xml config file for package is located
         /// </param>
         /// <exception cref="ConfigurationErrorsException">Configuration is in incorrect format</exception>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentException"></exception>
         public PackageReaderResult ReadPackage(string packageConfigurationPath)
         {
             var xDoc = this.xDocLoader.Load(packageConfigurationPath);

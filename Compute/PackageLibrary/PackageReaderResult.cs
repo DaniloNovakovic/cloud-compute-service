@@ -8,7 +8,7 @@ namespace Compute
 {
     public class PackageReaderResult
     {
-        public int? NumberOfInstances { get; set; } = null;
+        public int? NumberOfInstances { get; set; }
         public string AssemblyName { get; set; } = string.Empty;
 
         public override string ToString()

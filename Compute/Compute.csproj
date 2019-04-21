@@ -49,10 +49,10 @@
     <Compile Include="PackageLibrary\IPackageReader.cs" />
     <Compile Include="PackageLibrary\IFileIO.cs" />
     <Compile Include="PackageLibrary\IXDocumentLoader.cs" />
-    <Compile Include="PackageLibrary\PackageManager.cs" />
+    <Compile Include="PackageManager.cs" />
     <Compile Include="PackageLibrary\PackageReader.cs" />
     <Compile Include="PackageLibrary\PackageReaderResult.cs" />
-    <Compile Include="PackageLibrary\PackageWriter.cs" />
+    <Compile Include="PackageLibrary\FileIO.cs" />
     <Compile Include="PackageLibrary\XDocumentLoader.cs" />
     <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />
