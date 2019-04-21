@@ -6,9 +6,23 @@ using Common;
 
 namespace Compute
 {
+    public class ContainerHealthMonitorEventArgs : EventArgs
+    {
+        public ContainerHealthMonitorEventArgs()
+        {
+        }
+
+        public ContainerHealthMonitorEventArgs(ushort port)
+        {
+            this.Port = port;
+        }
+
+        public ushort Port { get; set; }
+    }
+
     internal sealed class ContainerHealthMonitor
     {
-        private readonly Lazy<ContainerHealthMonitor> monitor = new Lazy<ContainerHealthMonitor>(() => new ContainerHealthMonitor());
+        private static readonly Lazy<ContainerHealthMonitor> monitor = new Lazy<ContainerHealthMonitor>(() => new ContainerHealthMonitor());
         private Thread healthCheckerThread;
 
         private ContainerHealthMonitor()
@@ -20,7 +34,7 @@ namespace Compute
         /// <summary>
         /// Returns singleton instance of ContainerHealthMonitor class
         /// </summary>
-        public ContainerHealthMonitor Instance => this.monitor.Value;
+        public static ContainerHealthMonitor Instance => monitor.Value;
 
         /// <summary>
         /// Starts a detached task that will periodically check health for all container processes
@@ -71,20 +85,6 @@ namespace Compute
                 }
                 Thread.Sleep(1000);
             }
-        }
-
-        internal class ContainerHealthMonitorEventArgs : EventArgs
-        {
-            public ContainerHealthMonitorEventArgs()
-            {
-            }
-
-            public ContainerHealthMonitorEventArgs(ushort port)
-            {
-                this.Port = port;
-            }
-
-            public ushort Port { get; set; }
         }
     }
 }

@@ -17,12 +17,16 @@ namespace Compute
             var configItem = LoadComputeConfiguration();
             processManager.StartContainerProcesses(configItem);
 
+            var containerHealthMonitor = ContainerHealthMonitor.Instance;
+            containerHealthMonitor.ContainerFaulted += OnContainerHealthFaulted;
+            containerHealthMonitor.Run();
+
             try
             {
                 var validPackage = StartPeriodicCheckUntilFirstValidPackageIsFound(configItem);
                 var destinationAssemblies = CopyAssemblies(configItem, validPackage);
                 SendLoadAssemblySignalToContainers(destinationAssemblies);
-                StartPeriodHealthChecksInTheBackground(destinationAssemblies);
+                //StartPeriodHealthChecksInTheBackground(destinationAssemblies);
             }
             catch (Exception ex)
             {
@@ -33,6 +37,11 @@ namespace Compute
             Console.ReadLine();
 
             processManager.StopAllProcesses();
+        }
+
+        private static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs e)
+        {
+            Console.WriteLine($"{e.Port}: Problem occured!");
         }
 
         private static void OnContainerFailure(AssemblyInfo assembly, Exception exception)
