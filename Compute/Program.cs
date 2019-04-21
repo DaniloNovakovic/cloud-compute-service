@@ -35,23 +35,12 @@ namespace Compute
             processManager.StopAllProcesses();
         }
 
-        private static void StartPeriodHealthChecksInTheBackground(List<AssemblyInfo> destinationAssemblies)
-        {
-            Console.WriteLine("Running periodic health checks in the background... ");
-            foreach (var assembly in destinationAssemblies)
-            {
-                Task.Factory.StartNew((object tempAssembly) =>
-                {
-                    ContainerController.StartPeriodicHealthCheck((AssemblyInfo)tempAssembly, OnContainerFailure);
-                }, assembly.Clone());
-            }
-        }
-
         private static bool OnContainerFailure(AssemblyInfo assembly, Exception exception)
         {
-            Console.Error.WriteLine("Container failed/has closed... Exception msg: " + exception.Message);
-            var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+            Console.Error.WriteLine($"{assembly.Port}: Container failed/has closed... Exception msg: " + exception.Message);
             ushort port;
+
+            var freeContainerPorts = processManager.GetAllFreeContainerPorts();
             if (freeContainerPorts.Any()) // There is free container
             {
                 port = freeContainerPorts.First();
@@ -76,15 +65,6 @@ namespace Compute
             return true;
         }
 
-        private static void SendLoadAssemblySignalToContainers(List<AssemblyInfo> destinationPaths)
-        {
-            Console.WriteLine("Sending load assembly signal to requested number of container processes...");
-
-            ContainerController.SendLoadSignalToContainers(destinationPaths).GetAwaiter().GetResult();
-
-            Console.WriteLine("All of the processes have finished loading assemblies");
-        }
-
         private static List<AssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
         {
             Console.WriteLine($"Copying assemblies to n={package.NumberOfInstances} destinations...");
@@ -101,6 +81,27 @@ namespace Compute
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             Debug.WriteLine(configItem);
             return configItem;
+        }
+
+        private static void SendLoadAssemblySignalToContainers(List<AssemblyInfo> destinationPaths)
+        {
+            Console.WriteLine("Sending load assembly signal to requested number of container processes...");
+
+            ContainerController.SendLoadSignalToContainers(destinationPaths).GetAwaiter().GetResult();
+
+            Console.WriteLine("All of the processes have finished loading assemblies");
+        }
+
+        private static void StartPeriodHealthChecksInTheBackground(List<AssemblyInfo> destinationAssemblies)
+        {
+            Console.WriteLine("Running periodic health checks in the background... ");
+            foreach (var assembly in destinationAssemblies)
+            {
+                Task.Factory.StartNew((object tempAssembly) =>
+                {
+                    ContainerController.StartPeriodicHealthCheck((AssemblyInfo)tempAssembly, OnContainerFailure);
+                }, assembly.Clone());
+            }
         }
 
         private static PackageReaderResult StartPeriodicCheckUntilFirstValidPackageIsFound(ComputeConfigurationItem configItem)

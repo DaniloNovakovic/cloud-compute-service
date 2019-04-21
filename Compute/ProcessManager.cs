@@ -76,7 +76,7 @@ namespace Compute
         {
             if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
             {
-                containerProcess.IsContainerFree = true;
+                containerProcess.IsContainerFree = false;
                 return true;
             }
             return false;

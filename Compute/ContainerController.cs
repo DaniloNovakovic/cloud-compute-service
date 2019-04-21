@@ -92,7 +92,7 @@ namespace Compute
                     }
                 }
 
-                Thread.Sleep(2000);
+                Thread.Sleep(1000);
             }
         }
     }
