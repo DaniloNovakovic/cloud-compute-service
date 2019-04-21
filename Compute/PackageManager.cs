@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Threading;
 
 namespace Compute
 {
@@ -18,6 +19,37 @@ namespace Compute
         {
             this.reader = reader ?? new PackageReader();
             this.fileIO = fileIO ?? new FileIO();
+        }
+
+        /// <summary>
+        /// Runs until valid package is found (blocking method)
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public PackageReaderResult PeriodicallyCheckForValidPackage(ComputeConfiguration config)
+        {
+            string packageConfigPath = Path.Combine(config.PackageFullFolderPath, config.PackageConfigFileName);
+            while (true)
+            {
+                try
+                {
+                    return this.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: config.NumberOfContainersToStart);
+                }
+                catch (ConfigurationException configEx)
+                {
+                    Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
+                    if (this.DeletePackage(config.PackageFullFolderPath))
+                    {
+                        Console.WriteLine($"Successfully deleted {config.PackageFullFolderPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Exception occured while trying to read package. Reason: " + ex.Message);
+                }
+
+                Thread.Sleep(config.PackageAcquisitionIntervalMilliseconds);
+            }
         }
 
         /// <summary>

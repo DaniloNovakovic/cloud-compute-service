@@ -30,7 +30,7 @@ namespace Compute
                 Console.WriteLine("Starting periodic check until first valid package is found...");
 
                 var packageManager = new PackageManager();
-                var package = PeriodicallyCheckForValidPackage(config, packageManager);
+                var package = packageManager.PeriodicallyCheckForValidPackage(config);
                 Debug.WriteLine(package);
 
                 Console.WriteLine("Sending load assembly signal to requested number of container processes...");
@@ -93,47 +93,6 @@ namespace Compute
                 }
 
                 Thread.Sleep(1000);
-            }
-        }
-
-        /// <summary>
-        /// Runs until valid package is found
-        /// </summary>
-        private static PackageReaderResult PeriodicallyCheckForValidPackage(ComputeConfiguration config, PackageManager packageManager)
-        {
-            string packageConfigPath = Path.Combine(config.PackageFullFolderPath, config.PackageConfigFileName);
-            while (true)
-            {
-                try
-                {
-                    return packageManager.ReadPackage(
-                        packageConfigPath,
-                        maxAllowedNumberOfInstances: config.NumberOfContainersToStart);
-                }
-                catch (ConfigurationException configEx)
-                {
-                    Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
-                    DeletePackage(config, packageManager);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Exception occured while trying to read package. Reason: " + ex.Message);
-                }
-
-                Thread.Sleep(config.PackageAcquisitionIntervalMilliseconds);
-            }
-        }
-
-        private static void DeletePackage(ComputeConfiguration config, PackageManager packageManager)
-        {
-            Console.WriteLine($"Deleting package located in {config.PackageFullFolderPath}...");
-            try
-            {
-                packageManager.DeletePackage(config.PackageFullFolderPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to delete package. Reason: {ex.Message}");
             }
         }
     }
