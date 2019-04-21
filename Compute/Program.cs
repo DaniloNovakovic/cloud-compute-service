@@ -50,6 +50,29 @@ namespace Compute
         private static bool OnContainerFailure(AssemblyInfo assembly, Exception exception)
         {
             Console.Error.WriteLine("Container failed/has closed... Exception msg: " + exception.Message);
+            var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+            ushort port;
+            if (freeContainerPorts.Any()) // There is free container
+            {
+                port = freeContainerPorts.First();
+                ContainerController.SendLoadSignalToContainer(port, assembly.AssemblyFullPath);
+                processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+            }
+            else // There isn't any free container
+            {
+                port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                ContainerController.SendLoadSignalToContainer(port, assembly.AssemblyFullPath);
+            }
+
+            Task.Factory.StartNew((dynamic dobj) =>
+            {
+                ContainerController.StartPeriodicHealthCheck((AssemblyInfo)dobj, OnContainerFailure);
+            }, new AssemblyInfo()
+            {
+                Port = port,
+                AssemblyFullPath = assembly.AssemblyFullPath
+            });
+
             return true;
         }
 

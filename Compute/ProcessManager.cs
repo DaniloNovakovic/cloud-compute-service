@@ -16,19 +16,6 @@ namespace Compute
         }
 
         /// <summary>
-        /// Attempts to take container with given port. Returns true upon success, false upon failure
-        /// </summary>
-        public bool TakeContainer(ushort port)
-        {
-            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
-            {
-                containerProcess.IsContainerFree = true;
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Returns singleton instance of ProcessManager class
         /// </summary>
         public static ProcessManager Instance => processManager.Value;
@@ -61,6 +48,14 @@ namespace Compute
             }
         }
 
+        public ushort StartContainerProcess(ComputeConfigurationItem config)
+        {
+            ushort port = this.GetNextPort(config.MinPort, config);
+            var newContainerProcess = this.StartNewContainerProcess(port, config);
+            this.StoreContainerProcess(newContainerProcess);
+            return port;
+        }
+
         /// <summary>
         /// Stops / Closes all of the running processes that have been started by ProcessManager
         /// </summary>
@@ -72,6 +67,19 @@ namespace Compute
             }
             this.ContainerProcessDictById.Clear();
             this.ContainerProcessDictByPort.Clear();
+        }
+
+        /// <summary>
+        /// Attempts to take container with given port. Returns true upon success, false upon failure
+        /// </summary>
+        public bool TakeContainer(ushort port)
+        {
+            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
+            {
+                containerProcess.IsContainerFree = true;
+                return true;
+            }
+            return false;
         }
 
         private ushort? FindAvailablePortInClosedInterval(ushort minValue, ushort maxValue)
@@ -165,9 +173,9 @@ namespace Compute
                 this.Port = port;
             }
 
+            public bool IsContainerFree { get; set; } = true;
             public ushort Port { get; }
             public Process Process { get; }
-            public bool IsContainerFree { get; set; } = true;
         }
     }
 }
