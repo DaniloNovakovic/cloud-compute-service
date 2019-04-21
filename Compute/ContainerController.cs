@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.ServiceModel;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
@@ -27,10 +26,13 @@ namespace Compute
             return Task.WhenAll(taskList);
         }
 
+        /// <summary>
+        /// Attempts to send load signal to container until success (blocking method)
+        /// </summary>
+        /// <param name="port">port of remote container's wcf server</param>
+        /// <param name="assemblyPath">full path to .dll assembly</param>
         public static void SendLoadSignalToContainer(int port, string assemblyPath)
         {
-            Thread.Sleep(1000);
-
             string remoteAddress = $"net.tcp://localhost:{port}/{typeof(IContainerManagement).Name}";
             while (true)
             {
@@ -49,6 +51,42 @@ namespace Compute
                 }
 
                 Thread.Sleep(1000);
+            }
+        }
+
+        /// <summary>
+        /// Periodically checks health of remote container. Runs OnContainerError callback upon error/exception.
+        /// </summary>
+        /// <param name="OnContainerFailure">
+        /// Callback that is invoked upon error. If callback function returns true then periodic
+        /// health check will stop
+        /// </param>
+        public static void StartPeriodicHealthCheck(AssemblyInfo assemblyInfo, Func<AssemblyInfo, Exception, bool> OnContainerFailure)
+        {
+            string remoteAddress = $"net.tcp://localhost:{assemblyInfo.Port}/{typeof(IContainerManagement).Name}";
+            while (true)
+            {
+                try
+                {
+                    var channelFactory = new ChannelFactory<IContainerManagement>(new NetTcpBinding(), remoteAddress);
+                    var proxy = channelFactory.CreateChannel();
+                    string result = proxy.CheckHealth();
+                    Trace.TraceInformation($"{assemblyInfo.Port}: {DateTime.Now}: {result}");
+                    channelFactory.Close();
+                }
+                catch (Exception ex)
+                {
+                    if (OnContainerFailure == null)
+                    {
+                        Console.Error.WriteLine(ex.Message);
+                    }
+                    else if (OnContainerFailure(assemblyInfo, ex))
+                    {
+                        return;
+                    }
+                }
+
+                Thread.Sleep(2000);
             }
         }
     }

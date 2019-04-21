@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Compute
 {
@@ -19,8 +20,9 @@ namespace Compute
             try
             {
                 var validPackage = StartPeriodicCheckUntilFirstValidPackageIsFound(configItem);
-                var destinationPaths = CopyAssemblies(configItem, validPackage);
-                SendLoadAssemblySignalToContainers(destinationPaths);
+                var destinationAssemblies = CopyAssemblies(configItem, validPackage);
+                SendLoadAssemblySignalToContainers(destinationAssemblies);
+                StartPeriodHealthChecksInTheBackground(destinationAssemblies);
             }
             catch (Exception ex)
             {
@@ -31,6 +33,24 @@ namespace Compute
             Console.ReadLine();
 
             processManager.StopAllProcesses();
+        }
+
+        private static void StartPeriodHealthChecksInTheBackground(List<AssemblyInfo> destinationAssemblies)
+        {
+            Console.WriteLine("Running periodic health checks in the background... ");
+            foreach (var assembly in destinationAssemblies)
+            {
+                Task.Factory.StartNew((object tempAssembly) =>
+                {
+                    ContainerController.StartPeriodicHealthCheck((AssemblyInfo)tempAssembly, OnContainerFailure);
+                }, assembly.Clone());
+            }
+        }
+
+        private static bool OnContainerFailure(AssemblyInfo assembly, Exception exception)
+        {
+            Console.Error.WriteLine("Container failed/has closed... Exception msg: " + exception.Message);
+            return true;
         }
 
         private static void SendLoadAssemblySignalToContainers(List<AssemblyInfo> destinationPaths)
