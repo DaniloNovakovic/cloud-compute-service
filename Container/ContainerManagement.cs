@@ -34,18 +34,18 @@ namespace Container
         {
             if (string.IsNullOrWhiteSpace(assemblyName))
             {
-                return $"[ERROR] {nameof(assemblyName)} can't be null, empty or whitespace!";
+                return $"[ERROR] {ContainerId}: {nameof(assemblyName)} can't be null, empty or whitespace!";
             }
 
             try
             {
                 this.worker = this.assemblyLoader.LoadAssembly(assemblyName);
                 this.worker.Start(ContainerId);
-                return "[SUCCESS] Successfully loaded assembly!";
+                return $"[SUCCESS] {ContainerId}: successfully loaded assembly '{assemblyName}'!";
             }
             catch (Exception ex)
             {
-                return $"[ERROR] Failed to load assembly! Reason: {ex.Message}";
+                return $"[ERROR] {ContainerId}: Failed to load assembly '{assemblyName}'! Reason: {ex.Message}";
             }
         }
     }

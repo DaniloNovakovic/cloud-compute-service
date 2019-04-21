@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 using Common;
-using System.Reflection;
 
 namespace Compute
 {
@@ -16,17 +15,25 @@ namespace Compute
     {
         private static void Main()
         {
+            Console.WriteLine("Loading Compute configuration...");
+
             var config = ComputeConfiguration.Instance;
             Debug.WriteLine(config);
+
+            Console.WriteLine("Starting up container processes...");
 
             var processManager = ProcessManager.Instance;
             processManager.StartContainerProcesses(config);
 
             try
             {
+                Console.WriteLine("Starting periodic check until first valid package is found...");
+
                 var packageManager = new PackageManager();
                 var package = PeriodicallyCheckForValidPackage(config, packageManager);
                 Debug.WriteLine(package);
+
+                Console.WriteLine("Sending load assembly signal to requested number of container processes...");
 
                 var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
                 string sourceDllFullPath = Path.Combine(config.PackageFullFolderPath, package.AssemblyName);
@@ -34,13 +41,16 @@ namespace Compute
 
                 Task.WhenAll(taskList).GetAwaiter().GetResult();
 
-                Console.WriteLine("Press ENTER to exit...");
-                Console.ReadLine();
+                Console.WriteLine("All of the processes have finished loading assemblies");
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error: " + ex.Message);
             }
+
+            Console.WriteLine("Press ENTER to exit...");
+            Console.ReadLine();
+
             processManager.StopAllProcesses();
         }
 

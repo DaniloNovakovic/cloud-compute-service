@@ -15,6 +15,9 @@ namespace Container
         {
             ushort port = GetPortFromArgs(args) ?? 10100;
             ContainerManagement.ContainerId = port.ToString();
+
+            Console.WriteLine($"Starting server on port {port}...");
+
             var server = new Server(port, typeof(ContainerManagement), typeof(IContainerManagement));
             server.Open();
 
