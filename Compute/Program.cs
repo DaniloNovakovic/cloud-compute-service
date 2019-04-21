@@ -45,7 +45,8 @@ namespace Compute
             Console.WriteLine($"{args.Port}: Problem occured! Reason: {args.Exception.Message}");
 
             ushort port;
-            Task sendLoadSignalTask;
+            Task sendLoadSignalTask = null;
+            bool containerWasTaken = !string.IsNullOrWhiteSpace(args.AssemblyFullPath);
 
             lock (processManager)
             {
@@ -53,17 +54,26 @@ namespace Compute
                 if (freeContainerPorts.Any()) // There is free container
                 {
                     port = freeContainerPorts.First();
-                    sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
+                    if (containerWasTaken)
+                    {
+                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
+                    }
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
                 else // There isn't any free container
                 {
                     port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                    sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
+                    if (containerWasTaken)
+                    {
+                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
+                    }
                 }
             }
 
-            sendLoadSignalTask.GetAwaiter().GetResult();
+            if (sendLoadSignalTask != null)
+            {
+                sendLoadSignalTask.GetAwaiter().GetResult();
+            }
         }
 
         private static List<AssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
