@@ -13,6 +13,7 @@ namespace Compute
 
         private ProcessManager()
         {
+            ContainerHealthMonitor.Instance.ContainerFaulted += this.OnContainerFaulted;
         }
 
         /// <summary>
@@ -108,13 +109,12 @@ namespace Compute
             return !this.ContainerProcessDictByPort.ContainsKey(port);
         }
 
-        private void OnProcessExit(object sender, EventArgs e)
+        private void OnContainerFaulted(object sender, ContainerHealthMonitorEventArgs e)
         {
-            if (sender is Process process)
+            if (ContainerProcessDictByPort.TryGetValue(e.Port, out var containerProcess))
             {
-                var containerProcess = this.ContainerProcessDictById[process.Id];
                 this.ContainerProcessDictByPort.Remove(containerProcess.Port);
-                this.ContainerProcessDictById.Remove(process.Id);
+                this.ContainerProcessDictById.Remove(containerProcess.Process.Id);
             }
         }
 
@@ -151,8 +151,6 @@ namespace Compute
             }
 
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
-            newProcess.EnableRaisingEvents = true;
-            newProcess.Exited += this.OnProcessExit;
             this.ContainerProcessDictByPort[port] = new ContainerProcess(newProcess, port);
             return this.ContainerProcessDictByPort[port];
         }
