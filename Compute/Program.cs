@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -37,7 +36,8 @@ namespace Compute
 
                 var ports = processManager.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
                 string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
-                var taskList = LoadAssemblies(configItem, packageManager, ports, sourceDllFullPath);
+                var destinationPaths = CopyAssemblies(sourceDllFullPath, configItem.PackageFullFolderPath, ports);
+                var taskList = LoadAssemblies(destinationPaths);
 
                 Task.WhenAll(taskList).GetAwaiter().GetResult();
 
@@ -54,18 +54,42 @@ namespace Compute
             processManager.StopAllProcesses();
         }
 
-        private static List<Task> LoadAssemblies(ComputeConfigurationItem configItem, PackageManager packageManager, List<ushort> ports, string sourceDllFullPath)
+        private class AssemblyInfo
         {
-            var taskList = new List<Task>();
+            public ushort Port { get; set; }
+            public string AssemblyFullPath { get; set; }
+        }
+
+        private static List<AssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, List<ushort> ports)
+        {
+            var packageManager = new PackageManager();
+            var destinationPaths = new List<AssemblyInfo>();
             foreach (ushort port in ports)
             {
-                string destinationDllFullPath = Path.Combine(configItem.PackageFullFolderPath, $"JobWorker_{port}.dll");
-                packageManager.CopyFile(sourceDllFullPath, destinationDllFullPath);
-
-                taskList.Add(Task.Factory.StartNew((dynamic dobj) =>
+                string destinationDllFullPath = Path.Combine(destinationFolder, $"JobWorker_{port}.dll");
+                if (packageManager.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
-                    SendLoadSignalToContainers(dobj.port, dobj.assemblyPath);
-                }, new { port, assemblyPath = destinationDllFullPath }));
+                    destinationPaths.Add(new AssemblyInfo()
+                    {
+                        Port = port,
+                        AssemblyFullPath = destinationDllFullPath
+                    });
+                }
+            }
+            return destinationPaths;
+        }
+
+        private static List<Task> LoadAssemblies(List<AssemblyInfo> assemblies)
+        {
+            var taskList = new List<Task>();
+            foreach (var assembly in assemblies)
+            {
+                taskList.Add(Task.Factory.StartNew(
+                    (dynamic dobj) =>
+                    {
+                        SendLoadSignalToContainers(dobj.port, dobj.assemblyPath);
+                    },
+                    new { port = assembly.Port, assemblyPath = assembly.AssemblyFullPath }));
             }
 
             return taskList;
