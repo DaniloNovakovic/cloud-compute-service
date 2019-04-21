@@ -16,6 +16,19 @@ namespace Compute
         }
 
         /// <summary>
+        /// Attempts to take container with given port. Returns true upon success, false upon failure
+        /// </summary>
+        public bool TakeContainer(ushort port)
+        {
+            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
+            {
+                containerProcess.IsContainerFree = true;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Returns singleton instance of ProcessManager class
         /// </summary>
         public static ProcessManager Instance => processManager.Value;
@@ -23,6 +36,14 @@ namespace Compute
         public IEnumerable<ushort> GetAllContainerPorts()
         {
             return this.ContainerProcessDictByPort.Keys;
+        }
+
+        public IEnumerable<ushort> GetAllFreeContainerPorts()
+        {
+            return this.ContainerProcessDictByPort
+                .Values
+                .Where(container => container.IsContainerFree)
+                .Select(container => container.Port);
         }
 
         /// <summary>
@@ -146,6 +167,7 @@ namespace Compute
 
             public ushort Port { get; }
             public Process Process { get; }
+            public bool IsContainerFree { get; set; } = true;
         }
     }
 }

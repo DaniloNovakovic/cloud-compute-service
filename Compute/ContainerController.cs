@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
@@ -27,11 +28,11 @@ namespace Compute
         }
 
         /// <summary>
-        /// Attempts to send load signal to container until success (blocking method)
+        /// Attempts to send load signal to container until signal is successfully sent (blocking method)
         /// </summary>
         /// <param name="port">port of remote container's wcf server</param>
         /// <param name="assemblyPath">full path to .dll assembly</param>
-        public static void SendLoadSignalToContainer(int port, string assemblyPath)
+        public static void SendLoadSignalToContainer(ushort port, string assemblyPath)
         {
             string remoteAddress = $"net.tcp://localhost:{port}/{typeof(IContainerManagement).Name}";
             while (true)
@@ -41,9 +42,13 @@ namespace Compute
                     var channelFactory = new ChannelFactory<IContainerManagement>(new NetTcpBinding(), remoteAddress);
                     var proxy = channelFactory.CreateChannel();
                     string result = proxy.Load(assemblyPath);
+                    if (Regex.IsMatch(result, @"^\s*?\[SUCCESS\].*", RegexOptions.IgnoreCase))
+                    {
+                        ProcessManager.Instance.TakeContainer(port);
+                    }
                     Console.WriteLine(result);
                     channelFactory.Close();
-                    return;
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -79,10 +84,11 @@ namespace Compute
                     if (OnContainerFailure == null)
                     {
                         Console.Error.WriteLine(ex.Message);
+                        break;
                     }
                     else if (OnContainerFailure(assemblyInfo, ex))
                     {
-                        return;
+                        break;
                     }
                 }
 
