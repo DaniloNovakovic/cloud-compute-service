@@ -75,7 +75,7 @@ namespace Compute
             }
         }
 
-        private static List<PackageAssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
+        private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
         {
             Console.WriteLine($"Copying assemblies to n={package.NumberOfInstances} destinations...");
 
@@ -93,7 +93,7 @@ namespace Compute
             return configItem;
         }
 
-        private static void SendLoadAssemblySignalToContainers(List<PackageAssemblyInfo> destinationPaths)
+        private static void SendLoadAssemblySignalToContainers(IEnumerable<PackageAssemblyInfo> destinationPaths)
         {
             Console.WriteLine("Sending load assembly signal to requested number of container processes...");
 

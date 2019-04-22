@@ -31,7 +31,7 @@ namespace Compute
         /// <returns>List of successfully copied assemblies</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public List<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, List<ushort> ports)
+        public IEnumerable<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, IEnumerable<ushort> ports)
         {
             var destinationPaths = new List<PackageAssemblyInfo>();
             foreach (ushort port in ports)

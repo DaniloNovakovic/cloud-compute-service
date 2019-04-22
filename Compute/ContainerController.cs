@@ -9,7 +9,7 @@ namespace Compute
 {
     internal static class ContainerController
     {
-        public static Task SendLoadSignalToContainersAsync(List<PackageAssemblyInfo> assemblies)
+        public static Task SendLoadSignalToContainersAsync(IEnumerable<PackageAssemblyInfo> assemblies)
         {
             var taskList = new List<Task>();
             foreach (var assembly in assemblies)
