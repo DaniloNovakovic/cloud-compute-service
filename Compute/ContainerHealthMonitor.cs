@@ -50,8 +50,10 @@ namespace Compute
         {
             if (this.healthCheckerThread is null)
             {
-                this.healthCheckerThread = new Thread(this.PeriodicallyCheckHealth);
-                this.healthCheckerThread.IsBackground = true;
+                this.healthCheckerThread = new Thread(this.PeriodicallyCheckHealth)
+                {
+                    IsBackground = true
+                };
                 this.healthCheckerThread.Start();
             }
         }
