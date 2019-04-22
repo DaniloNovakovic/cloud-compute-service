@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,8 +9,7 @@ namespace Compute
     internal sealed class ProcessManager
     {
         private static readonly Lazy<ProcessManager> processManager = new Lazy<ProcessManager>(() => new ProcessManager());
-        private readonly Dictionary<int, ContainerProcess> ContainerProcessDictById = new Dictionary<int, ContainerProcess>();
-        private readonly Dictionary<ushort, ContainerProcess> ContainerProcessDictByPort = new Dictionary<ushort, ContainerProcess>();
+        private readonly ConcurrentDictionary<ushort, ContainerProcess> containerProcessDictByPort = new ConcurrentDictionary<ushort, ContainerProcess>();
 
         private ProcessManager()
         {
@@ -23,22 +23,22 @@ namespace Compute
 
         public IEnumerable<ushort> GetAllContainerPorts()
         {
-            return this.ContainerProcessDictByPort.Keys.ToList();
+            return this.containerProcessDictByPort.Keys.ToArray();
         }
 
         public IEnumerable<ushort> GetAllFreeContainerPorts()
         {
-            return this.ContainerProcessDictByPort
+            return this.containerProcessDictByPort
                 .Values
                 .Where(container => container.IsContainerFree)
                 .Select(container => container.Port)
-                .ToList();
+                .ToArray();
         }
 
         public PackageAssemblyInfo GetAssemblyInfo(ushort port)
         {
             var retVal = new PackageAssemblyInfo();
-            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess))
+            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess))
             {
                 retVal.Port = containerProcess.Port;
                 retVal.AssemblyFullPath = containerProcess.AssemblyFullPath;
@@ -50,8 +50,7 @@ namespace Compute
         {
             ushort port = this.GetNextPort(config.MinPort, config);
             var newContainerProcess = this.StartNewContainerProcess(port, config);
-            this.StoreContainerProcess(newContainerProcess);
-            return port;
+            return newContainerProcess.Port;
         }
 
         /// <summary>
@@ -59,13 +58,12 @@ namespace Compute
         /// </summary>
         public void StartContainerProcesses(ComputeConfigurationItem config)
         {
-            ushort currPort = this.GetNextPort(config.MinPort, config);
+            ushort currPort = this.GetNextPort(prevPort: config.MinPort, config);
 
             for (int i = 0; i < config.NumberOfContainersToStart; ++i)
             {
-                var newContainerProcess = this.StartNewContainerProcess(currPort, config);
-                this.StoreContainerProcess(newContainerProcess);
-                currPort = this.GetNextPort(currPort, config);
+                var newProcess = this.StartNewContainerProcess(currPort, config);
+                currPort = this.GetNextPort(prevPort: newProcess.Port, config);
             }
         }
 
@@ -74,12 +72,14 @@ namespace Compute
         /// </summary>
         public void StopAllProcesses()
         {
-            foreach (var containerProcess in this.ContainerProcessDictById.Values)
+            lock (this.containerProcessDictByPort)
             {
-                this.SafelyCloseProcess(containerProcess.Process);
+                foreach (var containerProcess in this.containerProcessDictByPort.Values)
+                {
+                    this.SafelyCloseProcess(containerProcess);
+                }
+                this.containerProcessDictByPort.Clear();
             }
-            this.ContainerProcessDictById.Clear();
-            this.ContainerProcessDictByPort.Clear();
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Compute
         /// </summary>
         public bool TakeContainer(ushort port, string assemblyFullPath = null)
         {
-            if (this.ContainerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
+            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
             {
                 containerProcess.IsContainerFree = false;
                 containerProcess.AssemblyFullPath = assemblyFullPath;
@@ -118,24 +118,20 @@ namespace Compute
 
         private bool IsPortAvailable(ushort port)
         {
-            return !this.ContainerProcessDictByPort.ContainsKey(port);
+            return !this.containerProcessDictByPort.ContainsKey(port);
         }
 
         private void OnContainerFaulted(object sender, ContainerHealthMonitorEventArgs e)
         {
-            if (this.ContainerProcessDictByPort.TryGetValue(e.Port, out var containerProcess))
+            if (this.containerProcessDictByPort.TryRemove(e.Port, out var removedContainer))
             {
-                this.ContainerProcessDictByPort.Remove(containerProcess.Port);
-                this.ContainerProcessDictById.Remove(containerProcess.Process.Id);
+                Debug.WriteLine($"{typeof(ProcessManager).Name}: Removed {removedContainer.Port} ({DateTime.Now})");
             }
         }
 
-        private void SafelyCloseProcess(Process processToClose)
+        private void SafelyCloseProcess(ContainerProcess containerProcess)
         {
-            if (this.ContainerProcessDictById.TryGetValue(processToClose.Id, out var containerProcess))
-            {
-                this.ContainerProcessDictByPort.Remove(containerProcess.Port);
-            }
+            var processToClose = containerProcess.Process;
 
             if (!processToClose.HasExited && !processToClose.CloseMainWindow())
             {
@@ -144,6 +140,11 @@ namespace Compute
             else
             {
                 processToClose.Close();
+            }
+
+            if (this.containerProcessDictByPort.TryRemove(containerProcess.Port, out var container))
+            {
+                Debug.WriteLine($"{typeof(ProcessManager).Name}: removed {container} ({DateTime.Now})");
             }
         }
 
@@ -163,17 +164,8 @@ namespace Compute
             }
 
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
-            this.ContainerProcessDictByPort[port] = new ContainerProcess(newProcess, port);
-            return this.ContainerProcessDictByPort[port];
-        }
-
-        private void StoreContainerProcess(ContainerProcess containerProcess)
-        {
-            if (this.ContainerProcessDictById.TryGetValue(containerProcess.Process.Id, out var containerToClose))
-            {
-                this.SafelyCloseProcess(containerToClose.Process);
-            }
-            this.ContainerProcessDictById[containerProcess.Process.Id] = containerProcess;
+            this.containerProcessDictByPort[port] = new ContainerProcess(newProcess, port);
+            return this.containerProcessDictByPort[port];
         }
 
         private class ContainerProcess
