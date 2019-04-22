@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,23 +14,27 @@ namespace Compute
 
         private ComputeConfiguration()
         {
-            ConfigurationItem.ContainerRelativeFilePath = this.GetConfigValue(nameof(ConfigurationItem.ContainerRelativeFilePath));
-            ConfigurationItem.ContainerFullFilePath = this.GetFullPath(ConfigurationItem.ContainerRelativeFilePath);
+            this.ConfigurationItem = new ComputeConfigurationItem();
 
-            ConfigurationItem.MaxPort = this.GetConfigValue<ushort>(nameof(ConfigurationItem.MaxPort));
-            ConfigurationItem.MinPort = this.GetConfigValue<ushort>(nameof(ConfigurationItem.MinPort));
+            this.ConfigurationItem.ContainerRelativeFilePath = this.GetConfigValue(nameof(this.ConfigurationItem.ContainerRelativeFilePath));
+            this.ConfigurationItem.ContainerFullFilePath = this.GetFullPath(this.ConfigurationItem.ContainerRelativeFilePath);
 
-            ConfigurationItem.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(ConfigurationItem.NumberOfContainersToStart));
+            this.ConfigurationItem.MaxPort = this.GetConfigValue<ushort>(nameof(this.ConfigurationItem.MaxPort));
+            this.ConfigurationItem.MinPort = this.GetConfigValue<ushort>(nameof(this.ConfigurationItem.MinPort));
 
-            ConfigurationItem.PackageConfigFileName = this.GetConfigValue(nameof(ConfigurationItem.PackageConfigFileName));
+            this.ConfigurationItem.NumberOfContainersToStart = this.GetConfigValue<int>(nameof(this.ConfigurationItem.NumberOfContainersToStart));
 
-            ConfigurationItem.PackageRelativeFolderPath = this.GetConfigValue(nameof(ConfigurationItem.PackageRelativeFolderPath));
-            ConfigurationItem.PackageFullFolderPath = this.GetFullPath(ConfigurationItem.PackageRelativeFolderPath);
+            this.ConfigurationItem.PackageConfigFileName = this.GetConfigValue(nameof(this.ConfigurationItem.PackageConfigFileName));
 
-            ConfigurationItem.PackageTempRelativeFolderPath = this.GetConfigValue(nameof(ConfigurationItem.PackageTempRelativeFolderPath));
-            ConfigurationItem.PackageTempFullFolderPath = this.GetFullPath(ConfigurationItem.PackageTempRelativeFolderPath);
+            this.ConfigurationItem.PackageRelativeFolderPath = this.GetConfigValue(nameof(this.ConfigurationItem.PackageRelativeFolderPath));
+            this.ConfigurationItem.PackageFullFolderPath = this.GetFullPath(this.ConfigurationItem.PackageRelativeFolderPath);
 
-            ConfigurationItem.PackageAcquisitionIntervalMilliseconds = this.GetConfigValue<int>(nameof(ConfigurationItem.PackageAcquisitionIntervalMilliseconds));
+            this.ConfigurationItem.PackageTempRelativeFolderPath = this.GetConfigValue(nameof(this.ConfigurationItem.PackageTempRelativeFolderPath));
+            this.ConfigurationItem.PackageTempFullFolderPath = this.GetFullPath(this.ConfigurationItem.PackageTempRelativeFolderPath);
+
+            this.ConfigurationItem.PackageAcquisitionIntervalMilliseconds = this.GetConfigValue<int>(nameof(this.ConfigurationItem.PackageAcquisitionIntervalMilliseconds));
+
+            Debug.WriteLine($"Configuration Item Created ({DateTime.Now}):" + Environment.NewLine + this.ConfigurationItem);
         }
 
         /// <summary>
@@ -40,7 +45,7 @@ namespace Compute
         /// <summary>
         /// Returns class that holds configuration properties
         /// </summary>
-        public ComputeConfigurationItem ConfigurationItem { get; } = new ComputeConfigurationItem();
+        public ComputeConfigurationItem ConfigurationItem { get; }
 
         public override string ToString()
         {

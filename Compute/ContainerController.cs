@@ -41,7 +41,7 @@ namespace Compute
                         ProcessManager.Instance.TakeContainer(port, assemblyPath);
                     }
 
-                    Console.WriteLine(result);
+                    Console.WriteLine($"{port}: {result}");
 
                     channelFactory.Close();
                     break;

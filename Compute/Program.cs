@@ -88,9 +88,7 @@ namespace Compute
         {
             Console.WriteLine("Loading Compute configuration...");
 
-            var configItem = ComputeConfiguration.Instance.ConfigurationItem;
-            Debug.WriteLine(configItem);
-            return configItem;
+            return ComputeConfiguration.Instance.ConfigurationItem;
         }
 
         private static void SendLoadAssemblySignalToContainers(IEnumerable<PackageAssemblyInfo> destinationPaths)

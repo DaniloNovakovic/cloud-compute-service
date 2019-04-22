@@ -125,7 +125,7 @@ namespace Compute
         {
             if (this.containerProcessDictByPort.TryRemove(e.Port, out var removedContainer))
             {
-                Debug.WriteLine($"{typeof(ProcessManager).Name}: Removed {removedContainer.Port} ({DateTime.Now})");
+                Debug.WriteLine($"{typeof(ProcessManager).Name}: removed container[{removedContainer.Port}] ({DateTime.Now})");
             }
         }
 
@@ -144,7 +144,7 @@ namespace Compute
 
             if (this.containerProcessDictByPort.TryRemove(containerProcess.Port, out var container))
             {
-                Debug.WriteLine($"{typeof(ProcessManager).Name}: removed {container} ({DateTime.Now})");
+                Debug.WriteLine($"{typeof(ProcessManager).Name}: removed container[{container.Port}] ({DateTime.Now})");
             }
         }
 
@@ -165,6 +165,9 @@ namespace Compute
 
             var newProcess = Process.Start(fileName: config.ContainerFullFilePath, arguments: $"{port}");
             this.containerProcessDictByPort[port] = new ContainerProcess(newProcess, port);
+
+            Debug.WriteLine($"{typeof(ProcessManager).Name}: added container[{port}] ({DateTime.Now})");
+
             return this.containerProcessDictByPort[port];
         }
 
