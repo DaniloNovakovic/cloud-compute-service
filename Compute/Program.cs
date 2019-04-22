@@ -41,7 +41,7 @@ namespace Compute
 
         private static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
         {
-            Console.WriteLine($"{args.Port}: Problem occured! Reason: {args.Exception.Message}");
+            Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
 
             ushort port;
             Task sendLoadSignalTask = null;
@@ -53,17 +53,25 @@ namespace Compute
                 if (freeContainerPorts.Any()) // There is free container
                 {
                     port = freeContainerPorts.First();
+                    Console.WriteLine($"[{args.Port}]: Moved to existing container [{port}]");
+
                     if (containerWasTaken)
                     {
-                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
+                        Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
+                        processManager.TakeContainer(port, args.AssemblyFullPath);
+                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath, numberOfAttempts: 1);
                     }
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
                 else // There isn't any free container
                 {
                     port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    Console.WriteLine($"[{args.Port}]: Replaced by new container [{port}]");
+
                     if (containerWasTaken)
                     {
+                        Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
+                        processManager.TakeContainer(port, args.AssemblyFullPath);
                         sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
                     }
                 }
