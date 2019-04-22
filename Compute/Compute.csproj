@@ -45,15 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PackageAssemblyInfo.cs" />
-    <Compile Include="ContainerController.cs" />
-    <Compile Include="ComputeConfiguration.cs" />
-    <Compile Include="ComputeConfigurationItem.cs" />
-    <Compile Include="ContainerHealthMonitor.cs" />
-    <Compile Include="PackageLibrary\IPackageReader.cs" />
-    <Compile Include="PackageLibrary\IFileIO.cs" />
-    <Compile Include="PackageLibrary\IXDocumentLoader.cs" />
-    <Compile Include="PackageManager.cs" />
+    <Compile Include="ContainerHelpers\ContainerFaultHandler.cs" />
+    <Compile Include="PackageLibrary\PackageAssemblyInfo.cs" />
+    <Compile Include="ContainerHelpers\ContainerController.cs" />
+    <Compile Include="Configuration\ComputeConfiguration.cs" />
+    <Compile Include="Configuration\ComputeConfigurationItem.cs" />
+    <Compile Include="ContainerHelpers\ContainerHealthMonitor.cs" />
+    <Compile Include="PackageLibrary\PackageContracts\IPackageReader.cs" />
+    <Compile Include="PackageLibrary\PackageContracts\IFileIO.cs" />
+    <Compile Include="PackageLibrary\PackageContracts\IXDocumentLoader.cs" />
+    <Compile Include="PackageLibrary\PackageManager.cs" />
     <Compile Include="PackageLibrary\PackageReader.cs" />
     <Compile Include="PackageLibrary\PackageReaderResult.cs" />
     <Compile Include="PackageLibrary\FileIO.cs" />

@@ -18,7 +18,7 @@ namespace Compute
             processManager.StartContainerProcesses(configItem);
 
             var containerHealthMonitor = ContainerHealthMonitor.Instance;
-            containerHealthMonitor.ContainerFaulted += OnContainerHealthFaulted;
+            containerHealthMonitor.ContainerFaulted += ContainerFaultHandler.OnContainerHealthFaulted;
             containerHealthMonitor.Start();
 
             try
@@ -37,50 +37,6 @@ namespace Compute
 
             processManager.StopAllProcesses();
             containerHealthMonitor.Stop();
-        }
-
-        private static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
-        {
-            Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
-
-            ushort port;
-            Task sendLoadSignalTask = null;
-            bool containerWasTaken = !string.IsNullOrWhiteSpace(args.AssemblyFullPath);
-
-            lock (processManager)
-            {
-                var freeContainerPorts = processManager.GetAllFreeContainerPorts();
-                if (freeContainerPorts.Any()) // There is free container
-                {
-                    port = freeContainerPorts.First();
-                    Console.WriteLine($"[{args.Port}]: Moved to existing container [{port}]");
-
-                    if (containerWasTaken)
-                    {
-                        Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
-                        processManager.TakeContainer(port, args.AssemblyFullPath);
-                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath, numberOfAttempts: 1);
-                    }
-                    processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                }
-                else // There isn't any free container
-                {
-                    port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                    Console.WriteLine($"[{args.Port}]: Replaced by new container [{port}]");
-
-                    if (containerWasTaken)
-                    {
-                        Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
-                        processManager.TakeContainer(port, args.AssemblyFullPath);
-                        sendLoadSignalTask = ContainerController.SendLoadSignalToContainerAsync(port, args.AssemblyFullPath);
-                    }
-                }
-            }
-
-            if (sendLoadSignalTask != null)
-            {
-                sendLoadSignalTask.GetAwaiter().GetResult();
-            }
         }
 
         private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package)
