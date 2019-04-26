@@ -54,7 +54,7 @@
     <Compile Include="PackageLibrary\PackageContracts\IPackageReader.cs" />
     <Compile Include="PackageLibrary\PackageContracts\IFileIO.cs" />
     <Compile Include="PackageLibrary\PackageContracts\IXDocumentLoader.cs" />
-    <Compile Include="PackageLibrary\PackageManager.cs" />
+    <Compile Include="PackageLibrary\PackageController.cs" />
     <Compile Include="PackageLibrary\PackageReader.cs" />
     <Compile Include="PackageLibrary\PackageReaderResult.cs" />
     <Compile Include="PackageLibrary\FileIO.cs" />

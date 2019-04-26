@@ -9,7 +9,7 @@ namespace Compute
 {
     internal static class Program
     {
-        private static readonly PackageController packageManager = new PackageController();
+        private static readonly PackageController packageController = new PackageController();
         private static readonly ProcessManager processManager = ProcessManager.Instance;
 
         private static void Main()
@@ -46,7 +46,7 @@ namespace Compute
 
             var ports = ProcessManager.Instance.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
             string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
-            return packageManager.CopyAssemblies(sourceDllFullPath, configItem.PackageFullFolderPath, ports);
+            return packageController.CopyAssemblies(sourceDllFullPath, configItem.PackageFullFolderPath, ports);
         }
 
         private static ComputeConfigurationItem LoadComputeConfiguration()

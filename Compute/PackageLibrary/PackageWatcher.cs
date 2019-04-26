@@ -17,18 +17,18 @@ namespace Compute
         /// <exception cref="ArgumentNullException"></exception>
         public async Task<PackageReaderResult> PeriodicallyCheckForValidPackageAsync(ComputeConfigurationItem configItem)
         {
-            var packageManager = new PackageController();
+            var packageController = new PackageController();
             string packageConfigPath = Path.Combine(configItem.PackageFullFolderPath, configItem.PackageConfigFileName);
             while (true)
             {
                 try
                 {
-                    return packageManager.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: configItem.NumberOfContainersToStart);
+                    return packageController.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: configItem.NumberOfContainersToStart);
                 }
                 catch (ConfigurationException configEx)
                 {
                     Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
-                    if (packageManager.DeletePackage(configItem.PackageFullFolderPath))
+                    if (packageController.DeletePackage(configItem.PackageFullFolderPath))
                     {
                         Console.WriteLine($"Successfully deleted {configItem.PackageFullFolderPath}");
                     }
