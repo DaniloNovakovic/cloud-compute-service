@@ -20,7 +20,7 @@ namespace Compute
         }
 
         /// <summary>
-        /// Recursively deletes folder at the specified path
+        /// Recursively deletes all files and folders inside the specified folder path
         /// </summary>
         /// <exception cref="IOException"></exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
@@ -28,9 +28,17 @@ namespace Compute
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="PathTooLongException"></exception>
         /// <exception cref="DirectoryNotFoundException"></exception>
-        public void DeleteFolder(string path)
+        public void ClearFolder(string path)
         {
-            Directory.Delete(path, recursive: true);
+            var root = new DirectoryInfo(path);
+            foreach (var file in root.EnumerateFiles())
+            {
+                file.Delete();
+            }
+            foreach (var dir in root.EnumerateDirectories())
+            {
+                dir.Delete();
+            }
         }
 
         public bool FileExists(string path)

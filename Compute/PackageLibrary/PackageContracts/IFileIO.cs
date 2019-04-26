@@ -4,7 +4,7 @@
     {
         void CopyFile(string sourceFileName, string destFileName);
 
-        void DeleteFolder(string path);
+        void ClearFolder(string path);
 
         bool FileExists(string path);
     }

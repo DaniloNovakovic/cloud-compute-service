@@ -30,7 +30,7 @@ namespace Compute.Tests
         {
             const string packageFolder = "myPackageFolder";
             this.packageManager.DeletePackage(packageFolder);
-            this.fileIOMock.Verify(writer => writer.DeleteFolder(packageFolder));
+            this.fileIOMock.Verify(writer => writer.ClearFolder(packageFolder));
         }
 
         [Test]

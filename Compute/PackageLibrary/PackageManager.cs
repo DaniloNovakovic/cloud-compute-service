@@ -75,7 +75,7 @@ namespace Compute
         {
             try
             {
-                this.fileIO.DeleteFolder(packageFolderFullPath);
+                this.fileIO.ClearFolder(packageFolderFullPath);
                 return true;
             }
             catch (Exception ex)
