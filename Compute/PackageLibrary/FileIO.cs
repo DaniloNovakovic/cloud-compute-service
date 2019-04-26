@@ -5,7 +5,8 @@ namespace Compute
     internal class FileIO : IFileIO
     {
         /// <summary>
-        /// Recursively deletes folder at the specified path
+        /// Copies folder from sourceFileName to destinationFileName (if folder is missing in
+        /// destination file name then it will be created)
         /// </summary>
         /// <exception cref="IOException"></exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
@@ -16,6 +17,7 @@ namespace Compute
         /// <exception cref="DirectoryNotFoundException"></exception>
         public void CopyFile(string sourceFileName, string destFileName)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
             File.Copy(sourceFileName, destFileName, overwrite: true);
         }
 
