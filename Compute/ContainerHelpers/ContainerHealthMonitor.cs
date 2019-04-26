@@ -8,24 +8,6 @@ using Common;
 
 namespace Compute
 {
-    public class ContainerHealthMonitorEventArgs : EventArgs
-    {
-        public ContainerHealthMonitorEventArgs()
-        {
-        }
-
-        public ContainerHealthMonitorEventArgs(ushort port, string assemblyFullPath = "", Exception exception = null)
-        {
-            this.Port = port;
-            this.AssemblyFullPath = assemblyFullPath;
-            this.Exception = exception;
-        }
-
-        public string AssemblyFullPath { get; set; }
-        public Exception Exception { get; set; }
-        public ushort Port { get; set; }
-    }
-
     internal sealed class ContainerHealthMonitor
     {
         private static readonly Lazy<ContainerHealthMonitor> monitor = new Lazy<ContainerHealthMonitor>(() => new ContainerHealthMonitor());

@@ -11,24 +11,23 @@ namespace Compute
         public static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
         {
             Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
-
-            ushort port;
             Task sendLoadSignalTask = null;
             var processManager = ProcessManager.Instance;
 
             lock (processManager)
             {
                 var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+
                 if (freeContainerPorts.Any()) // There is free container
                 {
-                    port = freeContainerPorts.First();
+                    ushort port = freeContainerPorts.First();
                     Console.WriteLine($"[{args.Port}]: Moved to existing container [{port}]");
                     sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
                 else // There isn't any free container
                 {
-                    port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    ushort port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                     Console.WriteLine($"[{args.Port}]: Replaced by new container [{port}]");
                     sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
                 }

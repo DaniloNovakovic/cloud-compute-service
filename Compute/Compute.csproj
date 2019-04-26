@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContainerHelpers\ContainerFaultHandler.cs" />
+    <Compile Include="ContainerHelpers\ContainerHealthMonitorEventArgs.cs" />
     <Compile Include="PackageLibrary\PackageAssemblyInfo.cs" />
     <Compile Include="ContainerHelpers\ContainerController.cs" />
     <Compile Include="Configuration\ComputeConfiguration.cs" />
