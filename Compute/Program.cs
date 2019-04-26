@@ -26,8 +26,8 @@ namespace Compute
                 Console.Error.WriteLine("Error: " + ex.Message);
             }
 
-            Console.WriteLine("Press ENTER to exit...");
-            Console.ReadLine();
+            //Console.WriteLine("Press ENTER to exit...");
+            //Console.ReadLine();
 
             processManager.StopAllProcesses();
             containerHealthMonitor.Stop();
