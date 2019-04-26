@@ -9,7 +9,7 @@ namespace Compute
 {
     internal static class Program
     {
-        private static readonly PackageManager packageManager = new PackageManager();
+        private static readonly PackageController packageManager = new PackageController();
         private static readonly ProcessManager processManager = ProcessManager.Instance;
 
         private static void Main()
@@ -20,10 +20,11 @@ namespace Compute
             var containerHealthMonitor = ContainerHealthMonitor.Instance;
             containerHealthMonitor.ContainerFaulted += ContainerFaultHandler.OnContainerHealthFaulted;
             containerHealthMonitor.Start();
+            var packageWatcher = new PackageWatcher();
 
             try
             {
-                var validPackage = StartPeriodicCheckUntilFirstValidPackageIsFound(configItem);
+                var validPackage = packageWatcher.PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
                 var destinationAssemblies = CopyAssemblies(configItem, validPackage);
                 SendLoadAssemblySignalToContainers(destinationAssemblies);
             }
@@ -62,15 +63,6 @@ namespace Compute
             ContainerController.SendLoadSignalToContainersAsync(destinationPaths).GetAwaiter().GetResult();
 
             Console.WriteLine("All of the processes have finished loading assemblies");
-        }
-
-        private static PackageReaderResult StartPeriodicCheckUntilFirstValidPackageIsFound(ComputeConfigurationItem configItem)
-        {
-            Console.WriteLine("Starting periodic check until first valid package is found...");
-
-            var package = packageManager.PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
-            Debug.WriteLine(package);
-            return package;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Compute.Tests
         private readonly int defaultNumberOfInstances = 2;
         private readonly int maxAllowedNumberOfInstances = 4;
         private Mock<IFileIO> fileIOMock;
-        private PackageManager packageManager;
+        private PackageController packageManager;
         private Mock<IPackageReader> readerMock;
         private PackageReaderResult validReaderResult;
 
@@ -87,7 +87,7 @@ namespace Compute.Tests
             };
             this.readerMock = new Mock<IPackageReader>();
             this.fileIOMock = new Mock<IFileIO>();
-            this.packageManager = new PackageManager(this.readerMock.Object, this.fileIOMock.Object);
+            this.packageManager = new PackageController(this.readerMock.Object, this.fileIOMock.Object);
 
             this.readerMock.Setup(reader => reader.ReadPackage(It.Is<string>(str => string.IsNullOrWhiteSpace(str)))).Throws<Exception>();
             this.readerMock.Setup(reader => reader.ReadPackage(It.Is<string>(str => !string.IsNullOrWhiteSpace(str)))).Returns(this.validReaderResult);

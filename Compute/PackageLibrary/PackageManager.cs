@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Compute
 {
-    public class PackageManager
+    public class PackageController
     {
         private readonly IFileIO fileIO;
         private readonly IPackageReader reader;
@@ -16,7 +16,7 @@ namespace Compute
         /// </summary>
         /// <param name="reader">Reader to use when reading package (will use default if null)</param>
         /// <param name="fileIO">Writer to use when reading package (will use default if null)</param>
-        public PackageManager(IPackageReader reader = null, IFileIO fileIO = null)
+        public PackageController(IPackageReader reader = null, IFileIO fileIO = null)
         {
             this.reader = reader ?? new PackageReader();
             this.fileIO = fileIO ?? new FileIO();
@@ -82,37 +82,6 @@ namespace Compute
             {
                 Console.Error.WriteLine(ex.Message);
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// Runs until valid package is found
-        /// </summary>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        public async Task<PackageReaderResult> PeriodicallyCheckForValidPackageAsync(ComputeConfigurationItem configItem)
-        {
-            string packageConfigPath = Path.Combine(configItem.PackageFullFolderPath, configItem.PackageConfigFileName);
-            while (true)
-            {
-                try
-                {
-                    return this.ReadPackage(packageConfigPath, maxAllowedNumberOfInstances: configItem.NumberOfContainersToStart);
-                }
-                catch (ConfigurationException configEx)
-                {
-                    Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
-                    if (this.DeletePackage(configItem.PackageFullFolderPath))
-                    {
-                        Console.WriteLine($"Successfully deleted {configItem.PackageFullFolderPath}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Exception occured while trying to read package. Reason: " + ex.Message);
-                }
-
-                await Task.Delay(configItem.PackageAcquisitionIntervalMilliseconds).ConfigureAwait(false);
             }
         }
 
