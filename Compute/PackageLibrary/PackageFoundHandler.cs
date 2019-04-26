@@ -21,7 +21,7 @@ namespace Compute
         {
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
-            return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageFullFolderPath, ports);
+            return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageTempFullFolderPath, ports);
         }
     }
 }

@@ -33,9 +33,12 @@ namespace Compute
         public IEnumerable<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, IEnumerable<ushort> ports)
         {
             var destinationPaths = new List<PackageAssemblyInfo>();
+            string assemblyName = Path.GetFileNameWithoutExtension(sourceDllFullPath);
+            int instanceCount = 0;
+
             foreach (ushort port in ports)
             {
-                string destinationDllFullPath = Path.Combine(destinationFolder, $"JobWorker_{port}.dll");
+                string destinationDllFullPath = Path.Combine(destinationFolder, $"{assemblyName}_{instanceCount++}.dll");
                 if (this.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
                     destinationPaths.Add(new PackageAssemblyInfo()
@@ -67,7 +70,8 @@ namespace Compute
         }
 
         /// <summary>
-        /// Attempts to delete package folder recursively. Returns true upon success.
+        /// Attempts to delete all files and folders inside folder with specified path. Returns true
+        /// upon success.
         /// </summary>
         /// <returns>True upon success, false upon failure</returns>
         public bool DeletePackage(string packageFolderFullPath)
