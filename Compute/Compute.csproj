@@ -56,10 +56,12 @@
     <Compile Include="PackageLibrary\PackageContracts\IFileIO.cs" />
     <Compile Include="PackageLibrary\PackageContracts\IXDocumentLoader.cs" />
     <Compile Include="PackageLibrary\PackageController.cs" />
+    <Compile Include="PackageLibrary\PackageFoundHandler.cs" />
     <Compile Include="PackageLibrary\PackageReader.cs" />
     <Compile Include="PackageLibrary\PackageReaderResult.cs" />
     <Compile Include="PackageLibrary\FileIO.cs" />
     <Compile Include="PackageLibrary\PackageWatcher.cs" />
+    <Compile Include="PackageLibrary\ValidPackageFoundEventArgs.cs" />
     <Compile Include="PackageLibrary\XDocumentLoader.cs" />
     <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />

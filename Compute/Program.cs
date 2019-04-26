@@ -6,6 +6,7 @@ namespace Compute
     {
         private static readonly ProcessManager processManager = ProcessManager.Instance;
         private static readonly ContainerHealthMonitor containerHealthMonitor = ContainerHealthMonitor.Instance;
+        private static readonly PackageWatcher packageWatcher = new PackageWatcher();
 
         private static void Main()
         {
@@ -17,7 +18,8 @@ namespace Compute
 
             try
             {
-                new PackageWatcher().Start(configItem);
+                packageWatcher.ValidPackageFound += PackageFoundHandler.OnValidPackageFound;
+                packageWatcher.Start();
             }
             catch (Exception ex)
             {

@@ -9,11 +9,12 @@ namespace Compute
 {
     internal class PackageWatcher
     {
-        private ComputeConfigurationItem configItem;
+        private readonly ComputeConfigurationItem configItem = ComputeConfiguration.Instance.ConfigurationItem;
 
-        public void Start(ComputeConfigurationItem configItem)
+        public event EventHandler<ValidPackageFoundEventArgs> ValidPackageFound;
+
+        public void Start()
         {
-            this.configItem = configItem;
             var package = this.AttemptToReadValidPackage();
             if (package != null)
             {
@@ -48,12 +49,6 @@ namespace Compute
             return null;
         }
 
-        private IEnumerable<PackageAssemblyInfo> CopyAssemblies(PackageReaderResult package, List<ushort> ports)
-        {
-            string sourceDllFullPath = Path.Combine(this.configItem.PackageFullFolderPath, package.AssemblyName);
-            return new PackageController().CopyAssemblies(sourceDllFullPath, this.configItem.PackageFullFolderPath, ports);
-        }
-
         private void OnPackageConfigurationError(string packageConfigPath, ConfigurationException configEx)
         {
             Console.Error.WriteLine($"ConfigurationException occured while trying to read {packageConfigPath}. Reason: " + configEx.Message);
@@ -65,9 +60,7 @@ namespace Compute
 
         private void OnValidPackageFound(PackageReaderResult package)
         {
-            var ports = ProcessManager.Instance.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
-            var destinationAssemblies = this.CopyAssemblies(package, ports);
-            ContainerController.SendLoadSignalToContainersAsync(destinationAssemblies).GetAwaiter().GetResult();
+            ValidPackageFound?.Invoke(this, new ValidPackageFoundEventArgs(package));
         }
 
         private void StartWatchingPackageFolder()
