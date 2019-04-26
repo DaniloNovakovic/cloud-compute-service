@@ -10,6 +10,25 @@ namespace Compute
 {
     internal class PackageWatcher
     {
+        public void Start(ComputeConfigurationItem configItem)
+        {
+            var package = PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
+            OnValidPackageFound(configItem, package);
+        }
+
+        private static void OnValidPackageFound(ComputeConfigurationItem configItem, PackageReaderResult package)
+        {
+            var ports = ProcessManager.Instance.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
+            var destinationAssemblies = CopyAssemblies(configItem, package, ports);
+            ContainerController.SendLoadSignalToContainersAsync(destinationAssemblies).GetAwaiter().GetResult();
+        }
+
+        private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(ComputeConfigurationItem configItem, PackageReaderResult package, List<ushort> ports)
+        {
+            string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
+            return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageFullFolderPath, ports);
+        }
+
         /// <summary>
         /// Runs until valid package is found
         /// </summary>
