@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Compute
@@ -12,7 +11,7 @@ namespace Compute
     {
         public void Start(ComputeConfigurationItem configItem)
         {
-            var package = PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
+            var package = this.PeriodicallyCheckForValidPackageAsync(configItem).GetAwaiter().GetResult();
             OnValidPackageFound(configItem, package);
         }
 
