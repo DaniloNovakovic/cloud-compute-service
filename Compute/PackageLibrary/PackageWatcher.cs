@@ -56,9 +56,14 @@ namespace Compute
         {
             string extension = Path.GetExtension(e.FullPath);
 
-            if (Regex.IsMatch(extension, @"(\.xml)|(\.dll)", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(extension, @"\.xml", RegexOptions.IgnoreCase))
             {
                 Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
+                var package = this.AttemptToReadValidPackage();
+                if (package != null)
+                {
+                    this.OnValidPackageFound(package);
+                }
             }
         }
 
