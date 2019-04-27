@@ -6,12 +6,22 @@ namespace Compute
 {
     internal static class Program
     {
-        private static readonly ProcessManager processManager = ProcessManager.Instance;
         private static readonly ContainerHealthMonitor containerHealthMonitor = ContainerHealthMonitor.Instance;
         private static readonly PackageWatcher packageWatcher = new PackageWatcher();
-        private static ServiceHost host;
+        private static readonly ProcessManager processManager = ProcessManager.Instance;
+        private static readonly WCFServer roleEnvironmentHost = new WCFServer(typeof(RoleEnvironmentService));
 
         private static void Main()
+        {
+            var configItem = Start();
+
+            Console.WriteLine("Press ENTER to exit...");
+            Console.ReadLine();
+
+            Stop(configItem);
+        }
+
+        private static ComputeConfigurationItem Start()
         {
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             processManager.StartContainerProcesses(configItem);
@@ -19,21 +29,20 @@ namespace Compute
             containerHealthMonitor.ContainerFaulted += ContainerFaultHandler.OnContainerHealthFaulted;
             containerHealthMonitor.Start();
 
+            roleEnvironmentHost.Open();
+
             packageWatcher.ValidPackageFound += PackageFoundHandler.OnValidPackageFound;
             packageWatcher.Start();
+            return configItem;
+        }
 
-            host = new ServiceHost(typeof(RoleEnvironmentService));
-            host.Open();
-            Console.WriteLine("Server started...");
-
-            Console.WriteLine("Press ENTER to exit...");
-            Console.ReadLine();
-
-            host.Close();
+        private static void Stop(ComputeConfigurationItem configItem)
+        {
+            packageWatcher.Stop();
+            roleEnvironmentHost.Close();
+            containerHealthMonitor.Stop();
 
             processManager.StopAllProcesses();
-            containerHealthMonitor.Stop();
-            packageWatcher.Stop();
 
             new PackageController().DeletePackage(configItem.PackageTempFullFolderPath);
         }
