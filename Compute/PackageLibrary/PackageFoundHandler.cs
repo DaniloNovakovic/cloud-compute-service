@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Compute
 {
@@ -14,6 +12,7 @@ namespace Compute
             var package = eventArgs.Package;
             var ports = ProcessManager.Instance.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
             var destinationAssemblies = CopyAssemblies(package, ports);
+            CopyDependencies(package);
             ContainerController.SendLoadSignalToContainersAsync(destinationAssemblies).GetAwaiter().GetResult();
         }
 
@@ -22,6 +21,26 @@ namespace Compute
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
             return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageTempFullFolderPath, ports);
+        }
+
+        private static void CopyDependencies(PackageReaderResult package)
+        {
+            var configItem = ComputeConfiguration.Instance.ConfigurationItem;
+            var packageController = new PackageController();
+            var root = new DirectoryInfo(configItem.PackageFullFolderPath);
+
+            var fileEnumerator = root
+                .EnumerateFiles()
+                .Where(fi => fi.Extension == ".dll" && !fi.Name.Contains(package.AssemblyName));
+
+            foreach (var file in fileEnumerator)
+            {
+                var destPath = Path.Combine(configItem.PackageTempFullFolderPath, file.Name);
+                if (!packageController.CopyFile(file.FullName, destPath))
+                {
+                    Console.Error.WriteLine($"Failed to copy file from {file.FullName} to {destPath}");
+                }
+            }
         }
     }
 }
