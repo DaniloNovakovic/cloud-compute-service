@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Security.Permissions;
 using System.Text.RegularExpressions;
-using System.Timers;
+using System.Threading;
 
 namespace Compute
 {
     internal class PackageWatcher
     {
-        private readonly Dictionary<string, bool> changedFiles = new Dictionary<string, bool>();
         private readonly ComputeConfigurationItem configItem = ComputeConfiguration.Instance.ConfigurationItem;
+        private readonly object mutex = new object();
+        private bool fileChangeHandled = false;
 
         public event EventHandler<ValidPackageFoundEventArgs> ValidPackageFound;
 
@@ -51,19 +51,18 @@ namespace Compute
             return null;
         }
 
-        // Define the event handlers.
         private void OnChanged(object source, FileSystemEventArgs e)
         {
-            string extension = Path.GetExtension(e.FullPath);
+            // sleeping for 500ms because file might still be in use
+            //(ex. Notepad++ performs two  writes to file on save)
+            Thread.Sleep(500);
 
-            if (Regex.IsMatch(extension, @"\.xml", RegexOptions.IgnoreCase))
+            var package = this.AttemptToReadValidPackage();
+
+            if (package != null)
             {
-                Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
-                var package = this.AttemptToReadValidPackage();
-                if (package != null)
-                {
-                    this.OnValidPackageFound(package);
-                }
+                ProcessManager.Instance.ResetAllProcesses(this.configItem);
+                this.OnValidPackageFound(package);
             }
         }
 
@@ -84,23 +83,49 @@ namespace Compute
         // protection against bug with file watcher and notepad where change event occurs twice
         private void SafeOnChanged(object source, FileSystemEventArgs e)
         {
-            lock (this.changedFiles)
+            if (this.ShouldIgnoreFileChange(e))
             {
-                if (this.changedFiles.ContainsKey(e.FullPath))
-                {
-                    return;
-                }
-                this.changedFiles[e.FullPath] = true;
+                return;
             }
 
-            OnChanged(source, e);
+            this.OnChanged(source, e);
 
-            var timer = new Timer(1000) { AutoReset = false };
+            this.StartFileChangedResetTimeout();
+        }
+
+        private bool ShouldIgnoreFileChange(FileSystemEventArgs e)
+        {
+            string extension = Path.GetExtension(e.FullPath);
+
+            if (!Regex.IsMatch(extension, @"(\.xml)|(\.dll)", RegexOptions.IgnoreCase))
+            {
+                return true;
+            }
+
+            if (this.fileChangeHandled)
+            {
+                return true;
+            }
+
+            lock (this.mutex)
+            {
+                if (this.fileChangeHandled)
+                {
+                    return true;
+                }
+                this.fileChangeHandled = true;
+            }
+            return false;
+        }
+
+        private void StartFileChangedResetTimeout()
+        {
+            var timer = new System.Timers.Timer(1000) { AutoReset = false };
             timer.Elapsed += (timerElapsedSender, timerElapsedArgs) =>
             {
-                lock (this.changedFiles)
+                lock (this.mutex)
                 {
-                    this.changedFiles.Remove(e.FullPath);
+                    this.fileChangeHandled = false;
                 }
             };
             timer.Start();

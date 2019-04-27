@@ -82,6 +82,12 @@ namespace Compute
             }
         }
 
+        public void ResetAllProcesses(ComputeConfigurationItem config)
+        {
+            StopAllProcesses();
+            StartContainerProcesses(config);
+        }
+
         /// <summary>
         /// Attempts to take container with given port. Returns true upon success, false upon failure
         /// </summary>
