@@ -16,21 +16,15 @@ namespace Compute
             containerHealthMonitor.ContainerFaulted += ContainerFaultHandler.OnContainerHealthFaulted;
             containerHealthMonitor.Start();
 
-            try
-            {
-                packageWatcher.ValidPackageFound += PackageFoundHandler.OnValidPackageFound;
-                packageWatcher.Start();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+            packageWatcher.ValidPackageFound += PackageFoundHandler.OnValidPackageFound;
+            packageWatcher.Start();
 
-            //Console.WriteLine("Press ENTER to exit...");
-            //Console.ReadLine();
+            Console.WriteLine("Press ENTER to exit...");
+            Console.ReadLine();
 
             processManager.StopAllProcesses();
             containerHealthMonitor.Stop();
+            packageWatcher.Stop();
         }
     }
 }

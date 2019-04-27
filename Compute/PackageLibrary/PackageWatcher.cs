@@ -12,17 +12,52 @@ namespace Compute
         private readonly ComputeConfigurationItem configItem = ComputeConfiguration.Instance.ConfigurationItem;
         private readonly object mutex = new object();
         private bool fileChangeHandled = false;
+        private readonly ManualResetEvent resetEvent = new ManualResetEvent(false);
+        private Thread packageWatcherThread;
 
         public event EventHandler<ValidPackageFoundEventArgs> ValidPackageFound;
 
         public void Start()
         {
-            var package = this.AttemptToReadValidPackage();
-            if (package != null)
+            if (this.packageWatcherThread?.IsAlive != true)
             {
-                this.OnValidPackageFound(package);
+                resetEvent.Reset();
+
+                this.packageWatcherThread = new Thread(this.Run)
+                {
+                    IsBackground = true
+                };
+                this.packageWatcherThread.Start();
             }
-            this.StartWatchingPackageFolder();
+        }
+
+        public void Stop()
+        {
+            if (this.packageWatcherThread?.IsAlive == true)
+            {
+                resetEvent.Set();
+
+                Thread.Sleep(100);
+
+                this.packageWatcherThread.Abort();
+            }
+        }
+
+        private void Run()
+        {
+            try
+            {
+                var package = this.AttemptToReadValidPackage();
+                if (package != null)
+                {
+                    this.OnValidPackageFound(package);
+                }
+                this.StartWatchingPackageFolder();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Package watcher error: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -148,8 +183,7 @@ namespace Compute
 
                 watcher.EnableRaisingEvents = true;
 
-                Console.WriteLine("Press ENTER to exit...");
-                Console.ReadLine();
+                resetEvent.WaitOne();
             }
         }
     }
