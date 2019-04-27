@@ -11,8 +11,8 @@ namespace Compute
     {
         private readonly ComputeConfigurationItem configItem = ComputeConfiguration.Instance.ConfigurationItem;
         private readonly object mutex = new object();
-        private bool fileChangeHandled = false;
         private readonly ManualResetEvent resetEvent = new ManualResetEvent(false);
+        private bool fileChangeHandled = false;
         private Thread packageWatcherThread;
 
         public event EventHandler<ValidPackageFoundEventArgs> ValidPackageFound;
@@ -21,7 +21,7 @@ namespace Compute
         {
             if (this.packageWatcherThread?.IsAlive != true)
             {
-                resetEvent.Reset();
+                this.resetEvent.Reset();
 
                 this.packageWatcherThread = new Thread(this.Run)
                 {
@@ -35,28 +35,11 @@ namespace Compute
         {
             if (this.packageWatcherThread?.IsAlive == true)
             {
-                resetEvent.Set();
+                this.resetEvent.Set();
 
                 Thread.Sleep(100);
 
                 this.packageWatcherThread.Abort();
-            }
-        }
-
-        private void Run()
-        {
-            try
-            {
-                var package = this.AttemptToReadValidPackage();
-                if (package != null)
-                {
-                    this.OnValidPackageFound(package);
-                }
-                this.StartWatchingPackageFolder();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Package watcher error: " + ex.Message);
             }
         }
 
@@ -97,6 +80,9 @@ namespace Compute
             if (package != null)
             {
                 ProcessManager.Instance.ResetAllProcesses(this.configItem);
+
+                Console.WriteLine("New package found. Reloading...");
+
                 this.OnValidPackageFound(package);
             }
         }
@@ -113,6 +99,23 @@ namespace Compute
         private void OnValidPackageFound(PackageReaderResult package)
         {
             ValidPackageFound?.Invoke(this, new ValidPackageFoundEventArgs(package));
+        }
+
+        private void Run()
+        {
+            try
+            {
+                var package = this.AttemptToReadValidPackage();
+                if (package != null)
+                {
+                    this.OnValidPackageFound(package);
+                }
+                this.StartWatchingPackageFolder();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Package watcher error: " + ex.Message);
+            }
         }
 
         // protection against bug with file watcher and notepad where change event occurs twice
@@ -183,7 +186,7 @@ namespace Compute
 
                 watcher.EnableRaisingEvents = true;
 
-                resetEvent.WaitOne();
+                this.resetEvent.WaitOne();
             }
         }
     }

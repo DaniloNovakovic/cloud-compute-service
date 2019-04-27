@@ -25,6 +25,8 @@ namespace Compute
             processManager.StopAllProcesses();
             containerHealthMonitor.Stop();
             packageWatcher.Stop();
+
+            new PackageController().DeletePackage(configItem.PackageTempFullFolderPath);
         }
     }
 }
