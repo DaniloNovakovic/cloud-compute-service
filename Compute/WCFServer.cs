@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.ServiceModel;
 
 namespace Compute
@@ -11,7 +12,7 @@ namespace Compute
         public WCFServer(Type serviceType)
         {
             this.host = new ServiceHost(serviceType);
-            this.address = this.host.BaseAddresses[0];
+            this.address = this.host.BaseAddresses.FirstOrDefault();
         }
 
         public WCFServer(Type serviceType, Type implementedContract, ushort port = 10100)
