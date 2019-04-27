@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 
-namespace Compute.RoleEnvironmentLibrary
+namespace Compute
 {
     internal class RoleEnvironmentService : IRoleEnvironment
     {
