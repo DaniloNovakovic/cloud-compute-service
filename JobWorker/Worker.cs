@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Threading;
 using Common;
+using RoleEnvironmentLibrary;
 
 namespace JobWorker
 {
     public class Worker : IWorker
     {
         private string containerId;
+        private Thread thread;
 
         /// <summary>
         /// Starts the worker
@@ -21,6 +24,12 @@ namespace JobWorker
 
             this.containerId = containerId;
             Console.WriteLine($"{containerId}: Worker started");
+
+            thread = new Thread(DoWork)
+            {
+                IsBackground = true
+            };
+            thread.Start();
         }
 
         /// <summary>
@@ -34,7 +43,35 @@ namespace JobWorker
                 throw new InvalidOperationException($"Worker hasn't been started yet.");
             }
 
+            if (thread.IsAlive)
+            {
+                thread.Abort();
+            }
+
             Console.WriteLine($"{this.containerId}: Worker stopped");
+        }
+
+        private void DoWork()
+        {
+            try
+            {
+                var currentRoleInstance = RoleEnvironment.CurrentRoleInstance("JobWorker", containerId);
+                var brotherInstances = RoleEnvironment.BrotherInstances;
+
+                Console.WriteLine($"Current role instance: {currentRoleInstance}");
+                Console.WriteLine("Brother instances: ");
+                if (brotherInstances != null)
+                {
+                    foreach (var brother in brotherInstances)
+                    {
+                        Console.WriteLine(brother);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

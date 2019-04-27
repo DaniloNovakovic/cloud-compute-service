@@ -49,6 +49,10 @@
       <Project>{BAA11941-155F-4A24-987D-B86BD9B6A690}</Project>
       <Name>Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RoleEnvironmentLibrary\RoleEnvironmentLibrary.csproj">
+      <Project>{A82FFCFE-6867-4B52-8E57-F77238FBFBD5}</Project>
+      <Name>RoleEnvironmentLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
