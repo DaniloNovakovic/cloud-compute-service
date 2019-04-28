@@ -9,38 +9,15 @@ namespace Compute
         public static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
         {
             var oldRoleInstance = args.RoleInstance;
+
             Console.WriteLine($"{oldRoleInstance.Port}: Container faulted. Recovering...");
-            Task sendLoadSignalTask = null;
-            var processManager = ProcessManager.SingletonInstance;
 
-            lock (processManager)
-            {
-                var freeContainerPorts = processManager.GetAllFreeContainerPorts();
-
-                if (freeContainerPorts.Any()) // There is free container
-                {
-                    ushort newPort = freeContainerPorts.First();
-                    Console.WriteLine($"[{oldRoleInstance.Port}]: Moved to existing container [{newPort}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
-                    processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                }
-                else // There isn't any free container
-                {
-                    ushort newPort = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                    Console.WriteLine($"[{oldRoleInstance.Port}]: Replaced by new container [{newPort}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
-                }
-            }
-
-            if (sendLoadSignalTask != null)
-            {
-                sendLoadSignalTask.GetAwaiter().GetResult();
-            }
+            RecoverFromFailureAsync(oldRoleInstance, ProcessManager.SingletonInstance).GetAwaiter().GetResult();
         }
 
         private static Task AttempToSendLoadSignalAsync(RoleInstance newRoleInstance, ProcessManager processManager)
         {
-            Task task = null;
+            var task = Task.CompletedTask;
 
             if (!string.IsNullOrWhiteSpace(newRoleInstance.AssemblyFullPath))
             {
@@ -60,6 +37,32 @@ namespace Compute
                 AssemblyFullPath = oldRoleInstance.AssemblyFullPath,
                 Port = newPort
             };
+        }
+
+        private static Task RecoverFromFailureAsync(RoleInstance oldRoleInstance, ProcessManager processManager)
+        {
+            var sendLoadSignalTask = Task.CompletedTask;
+
+            lock (processManager)
+            {
+                var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+                ushort newPort;
+                if (freeContainerPorts.Any()) // There is free container
+                {
+                    newPort = freeContainerPorts.First();
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Moved to existing container [{newPort}]");
+                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
+                    processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                }
+                else // There isn't any free container
+                {
+                    newPort = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Replaced by new container [{newPort}]");
+                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
+                }
+            }
+
+            return sendLoadSignalTask;
         }
     }
 }
