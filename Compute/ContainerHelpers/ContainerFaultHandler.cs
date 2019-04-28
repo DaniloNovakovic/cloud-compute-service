@@ -44,8 +44,9 @@ namespace Compute
             if (!string.IsNullOrWhiteSpace(assemblyFullPath))
             {
                 Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
-                processManager.TakeContainer(port, assemblyFullPath);
-                task = ContainerController.SendLoadSignalToContainerAsync(port, assemblyFullPath, numberOfAttempts: 1);
+                var roleInstance = new RoleInstance() { AssemblyFullPath = assemblyFullPath, Port = port };
+                processManager.TakeContainer(roleInstance);
+                task = ContainerController.SendLoadSignalToContainerAsync(roleInstance, numberOfAttempts: 1);
             }
 
             return task;

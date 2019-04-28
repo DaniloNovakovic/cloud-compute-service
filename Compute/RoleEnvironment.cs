@@ -15,6 +15,9 @@ namespace Compute
 
         public static void SafeAddOrUpdate(RoleInstance roleInstance)
         {
+            if (roleInstance.RoleName is null)
+                return;
+
             var role = Roles.GetOrAdd(key: roleInstance.RoleName, valueFactory: roleName => new Role(roleName));
             role.Instances[roleInstance.Id] = roleInstance;
             roleInstance.Role = role;
