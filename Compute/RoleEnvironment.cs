@@ -51,8 +51,6 @@ namespace Compute
 
         public string AcquireAddress(string myAssemblyName, string containerId)
         {
-            Console.WriteLine($"{myAssemblyName}: containerId - {containerId}");
-
             string address = string.Empty;
 
             try
@@ -68,7 +66,6 @@ namespace Compute
 
         public string[] BrotherInstances(string myAssemblyName, string myAddress)
         {
-            Console.WriteLine($"{myAssemblyName}: myAddress - {myAddress}");
             var retVal = new string[0];
 
             try
