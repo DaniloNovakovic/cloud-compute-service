@@ -25,15 +25,12 @@ namespace Compute
         /// <summary>
         /// Copies sourceDll to new file for each provided port.
         /// </summary>
-        /// <param name="sourceDllFullPath"></param>
-        /// <param name="destinationFolder"></param>
-        /// <param name="ports"></param>
         /// <returns>List of successfully copied assemblies</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, int numberOfInstances)
+        public IEnumerable<RoleInstance> CopyAssemblies(string sourceDllFullPath, string destinationFolder, int numberOfInstances)
         {
-            var destinationPaths = new List<PackageAssemblyInfo>();
+            var destinationPaths = new List<RoleInstance>();
             string roleName = Path.GetFileNameWithoutExtension(sourceDllFullPath);
             var ports = ProcessManager.Instance.GetAllContainerPorts().Take(numberOfInstances);
             int instanceCount = 0;
@@ -43,10 +40,11 @@ namespace Compute
                 string destinationDllFullPath = Path.Combine(destinationFolder, $"{roleName}_{instanceCount++}.dll");
                 if (this.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
-                    destinationPaths.Add(new PackageAssemblyInfo()
+                    destinationPaths.Add(new RoleInstance()
                     {
                         Port = port,
-                        AssemblyFullPath = destinationDllFullPath
+                        AssemblyFullPath = destinationDllFullPath,
+                        RoleName = roleName
                     });
                 }
             }

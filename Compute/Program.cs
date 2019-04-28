@@ -6,7 +6,7 @@ namespace Compute
 {
     internal static class Program
     {
-        private static readonly ContainerHealthMonitor containerHealthMonitor = ContainerHealthMonitor.Instance;
+        private static readonly ContainerHealthMonitor containerHealthMonitor = ContainerHealthMonitor.SingletonInstance;
         private static readonly PackageWatcher packageWatcher = new PackageWatcher();
         private static readonly ProcessManager processManager = ProcessManager.Instance;
         private static readonly WCFServer roleEnvironmentHost = new WCFServer(typeof(RoleEnvironmentService));

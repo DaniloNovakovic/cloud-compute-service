@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Compute
 {
-    internal class Role
+    public class Role
     {
         public string Name { get; }
         public IEnumerable<RoleInstance> Instances { get; }

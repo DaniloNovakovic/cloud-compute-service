@@ -16,7 +16,7 @@ namespace Compute
             ContainerController.SendLoadSignalToContainersAsync(destinationAssemblies).GetAwaiter().GetResult();
         }
 
-        private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(PackageReaderResult package, int numberOfInstances)
+        private static IEnumerable<RoleInstance> CopyAssemblies(PackageReaderResult package, int numberOfInstances)
         {
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);

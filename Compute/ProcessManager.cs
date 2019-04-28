@@ -13,7 +13,7 @@ namespace Compute
 
         private ProcessManager()
         {
-            ContainerHealthMonitor.Instance.ContainerFaulted += this.OnContainerFaulted;
+            ContainerHealthMonitor.SingletonInstance.ContainerFaulted += this.OnContainerFaulted;
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Compute
                 .ToArray();
         }
 
-        public PackageAssemblyInfo GetAssemblyInfo(ushort port)
+        public RoleInstance GetAssemblyInfo(ushort port)
         {
-            var retVal = new PackageAssemblyInfo();
+            var retVal = new RoleInstance();
             if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess))
             {
                 retVal.Port = containerProcess.Port;

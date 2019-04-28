@@ -53,12 +53,12 @@ namespace Compute
             }
         }
 
-        public static Task SendLoadSignalToContainersAsync(IEnumerable<PackageAssemblyInfo> assemblies)
+        public static Task SendLoadSignalToContainersAsync(IEnumerable<RoleInstance> instances)
         {
             var taskList = new List<Task>();
-            foreach (var assembly in assemblies)
+            foreach (var instance in instances)
             {
-                taskList.Add(SendLoadSignalToContainerAsync(assembly.Port, assembly.AssemblyFullPath));
+                taskList.Add(SendLoadSignalToContainerAsync(instance.Port, instance.AssemblyFullPath));
             }
 
             return Task.WhenAll(taskList);

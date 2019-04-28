@@ -22,7 +22,7 @@ namespace Compute
         /// <summary>
         /// Returns singleton instance of ContainerHealthMonitor class
         /// </summary>
-        public static ContainerHealthMonitor Instance => monitor.Value;
+        public static ContainerHealthMonitor SingletonInstance => monitor.Value;
 
         /// <summary>
         /// Starts a detached task that will periodically check health for all container processes
