@@ -8,7 +8,7 @@ namespace Compute
     {
         private static readonly ContainerHealthMonitor containerHealthMonitor = ContainerHealthMonitor.SingletonInstance;
         private static readonly PackageWatcher packageWatcher = new PackageWatcher();
-        private static readonly ProcessManager processManager = ProcessManager.Instance;
+        private static readonly ProcessManager processManager = ProcessManager.SingletonInstance;
         private static readonly WCFServer roleEnvironmentHost = new WCFServer(typeof(RoleEnvironmentService));
 
         private static void Main()

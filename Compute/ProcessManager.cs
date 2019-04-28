@@ -19,7 +19,7 @@ namespace Compute
         /// <summary>
         /// Returns singleton instance of ProcessManager class
         /// </summary>
-        public static ProcessManager Instance => processManager.Value;
+        public static ProcessManager SingletonInstance => processManager.Value;
 
         public IEnumerable<ushort> GetAllContainerPorts()
         {

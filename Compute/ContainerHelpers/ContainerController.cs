@@ -31,7 +31,7 @@ namespace Compute
 
                     if (Regex.IsMatch(result, @"^\s*?\[SUCCESS\].*", RegexOptions.IgnoreCase))
                     {
-                        ProcessManager.Instance.TakeContainer(port, assemblyPath);
+                        ProcessManager.SingletonInstance.TakeContainer(port, assemblyPath);
                     }
 
                     Console.WriteLine($"{port}: {result}");

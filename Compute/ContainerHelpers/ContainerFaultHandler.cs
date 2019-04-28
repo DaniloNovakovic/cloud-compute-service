@@ -10,7 +10,7 @@ namespace Compute
         {
             Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
             Task sendLoadSignalTask = null;
-            var processManager = ProcessManager.Instance;
+            var processManager = ProcessManager.SingletonInstance;
 
             lock (processManager)
             {

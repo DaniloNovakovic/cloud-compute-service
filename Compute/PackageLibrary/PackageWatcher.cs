@@ -79,7 +79,7 @@ namespace Compute
 
             if (package != null)
             {
-                ProcessManager.Instance.ResetAllProcesses(this.configItem);
+                ProcessManager.SingletonInstance.ResetAllProcesses(this.configItem);
 
                 Console.WriteLine("New package found. Reloading...");
 

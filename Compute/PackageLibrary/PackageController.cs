@@ -32,7 +32,7 @@ namespace Compute
         {
             var destinationPaths = new List<RoleInstance>();
             string roleName = Path.GetFileNameWithoutExtension(sourceDllFullPath);
-            var ports = ProcessManager.Instance.GetAllContainerPorts().Take(numberOfInstances);
+            var ports = ProcessManager.SingletonInstance.GetAllContainerPorts().Take(numberOfInstances);
             int instanceCount = 0;
 
             foreach (ushort port in ports)
