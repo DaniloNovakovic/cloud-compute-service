@@ -37,12 +37,7 @@ namespace Compute
 
         public RoleInstance GetRoleInstance(ushort port)
         {
-            var retVal = new RoleInstance();
-            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess))
-            {
-                retVal = containerProcess.RoleInstance;
-            }
-            return retVal;
+            return this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) ? containerProcess.RoleInstance : null;
         }
 
         public ushort StartContainerProcess(ComputeConfigurationItem config)
@@ -88,25 +83,13 @@ namespace Compute
         }
 
         /// <summary>
-        /// Attempts to take container with given port. Returns true upon success, false upon failure
+        /// Attempts to take container with port specified in roleInstance. Returns true upon
+        /// success, false upon failure
         /// </summary>
-        public bool TakeContainer(ushort port, string assemblyFullPath = null)
-        {
-            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
-            {
-                containerProcess.IsContainerFree = false;
-                containerProcess.AssemblyFullPath = assemblyFullPath;
-                return true;
-            }
-            return false;
-        }
-
         public bool TakeContainer(RoleInstance roleInstance)
         {
             if (this.containerProcessDictByPort.TryGetValue(roleInstance.Port, out var containerProcess) && containerProcess.IsContainerFree)
             {
-                containerProcess.IsContainerFree = false;
-                containerProcess.AssemblyFullPath = roleInstance.AssemblyFullPath;
                 containerProcess.RoleInstance = roleInstance;
                 RoleEnvironment.SafeAddOrUpdate(roleInstance);
                 return true;
@@ -198,8 +181,7 @@ namespace Compute
             }
 
             public RoleInstance RoleInstance { get; set; }
-            public string AssemblyFullPath { get; set; } = string.Empty;
-            public bool IsContainerFree { get; set; } = true;
+            public bool IsContainerFree => RoleInstance is null;
             public ushort Port { get; }
             public Process Process { get; }
         }
