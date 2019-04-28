@@ -47,19 +47,20 @@ namespace Compute
             {
                 var freeContainerPorts = processManager.GetAllFreeContainerPorts();
                 ushort newPort;
-                if (freeContainerPorts.Any()) // There is free container
+
+                if (freeContainerPorts.Any())
                 {
                     newPort = freeContainerPorts.First();
                     Console.WriteLine($"[{oldRoleInstance.Port}]: Moved to existing container [{newPort}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
-                else // There isn't any free container
+                else
                 {
                     newPort = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                     Console.WriteLine($"[{oldRoleInstance.Port}]: Replaced by new container [{newPort}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
                 }
+
+                sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
             }
 
             return sendLoadSignalTask;
