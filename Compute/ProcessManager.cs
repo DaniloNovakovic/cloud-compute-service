@@ -35,15 +35,15 @@ namespace Compute
                 .ToArray();
         }
 
-        public RoleInstance GetAssemblyInfo(ushort port)
+        public RoleInstance GetRoleInstance(ushort port)
         {
-            var retVal = new RoleInstance();
-            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess))
-            {
-                retVal.Port = containerProcess.Port;
-                retVal.AssemblyFullPath = containerProcess.AssemblyFullPath;
-            }
-            return retVal;
+            return this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) ? containerProcess.RoleInstance : null;
+        }
+
+        public void ResetAllProcesses(ComputeConfigurationItem config)
+        {
+            this.StopAllProcesses();
+            this.StartContainerProcesses(config);
         }
 
         public ushort StartContainerProcess(ComputeConfigurationItem config)
@@ -82,36 +82,22 @@ namespace Compute
             }
         }
 
-        public void ResetAllProcesses(ComputeConfigurationItem config)
-        {
-            StopAllProcesses();
-            StartContainerProcesses(config);
-        }
-
         /// <summary>
-        /// Attempts to take container with given port. Returns true upon success, false upon failure
+        /// Attempts to take container with port specified in roleInstance. Returns true upon
+        /// success, false upon failure
         /// </summary>
-        public bool TakeContainer(ushort port, string assemblyFullPath = null)
-        {
-            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) && containerProcess.IsContainerFree)
-            {
-                containerProcess.IsContainerFree = false;
-                containerProcess.AssemblyFullPath = assemblyFullPath;
-                return true;
-            }
-            return false;
-        }
-
         public bool TakeContainer(RoleInstance roleInstance)
         {
+            if (string.IsNullOrWhiteSpace(roleInstance.RoleName))
+                return false;
+
             if (this.containerProcessDictByPort.TryGetValue(roleInstance.Port, out var containerProcess) && containerProcess.IsContainerFree)
             {
-                containerProcess.IsContainerFree = false;
-                containerProcess.AssemblyFullPath = roleInstance.AssemblyFullPath;
-                containerProcess.RoleInstance = roleInstance;
                 RoleEnvironment.SafeAddOrUpdate(roleInstance);
+                containerProcess.RoleInstance = roleInstance;
                 return true;
             }
+
             return false;
         }
 
@@ -198,11 +184,10 @@ namespace Compute
                 this.Port = port;
             }
 
-            public RoleInstance RoleInstance { get; set; }
-            public string AssemblyFullPath { get; set; } = string.Empty;
-            public bool IsContainerFree { get; set; } = true;
+            public bool IsContainerFree => this.RoleInstance is null;
             public ushort Port { get; }
             public Process Process { get; }
+            public RoleInstance RoleInstance { get; set; }
         }
     }
 }

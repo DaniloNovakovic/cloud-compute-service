@@ -18,8 +18,10 @@ namespace Compute
         /// <param name="numberOfAttempts">defines number of attempts to establish connection</param>
         /// <param name="millisecondsDelay">delay/time in milliseconds between each attempt</param>
         /// <returns>true if connection has been established and Load signal has been sent.</returns>
-        public static async Task<bool> SendLoadSignalToContainerAsync(ushort port, string assemblyPath, int numberOfAttempts = 2, int millisecondsDelay = 500)
+        public static async Task<bool> SendLoadSignalToContainerAsync(RoleInstance roleInstance, int numberOfAttempts = 2, int millisecondsDelay = 500)
         {
+            var port = roleInstance.Port;
+            var assemblyPath = roleInstance.AssemblyFullPath;
             string remoteAddress = $"net.tcp://localhost:{port}/{typeof(IContainerManagement).Name}";
             while (true)
             {
@@ -31,7 +33,7 @@ namespace Compute
 
                     if (Regex.IsMatch(result, @"^\s*?\[SUCCESS\].*", RegexOptions.IgnoreCase))
                     {
-                        ProcessManager.SingletonInstance.TakeContainer(port, assemblyPath);
+                        ProcessManager.SingletonInstance.TakeContainer(roleInstance);
                     }
 
                     Console.WriteLine($"{port}: {result}");
@@ -58,7 +60,7 @@ namespace Compute
             var taskList = new List<Task>();
             foreach (var instance in instances)
             {
-                taskList.Add(SendLoadSignalToContainerAsync(instance.Port, instance.AssemblyFullPath));
+                taskList.Add(SendLoadSignalToContainerAsync(instance));
             }
 
             return Task.WhenAll(taskList);

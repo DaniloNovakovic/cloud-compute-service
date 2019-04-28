@@ -8,47 +8,64 @@ namespace Compute
     {
         public static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
         {
-            Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
-            Task sendLoadSignalTask = null;
-            var processManager = ProcessManager.SingletonInstance;
+            var oldRoleInstance = args.RoleInstance;
+
+            RoleEnvironment.SafeRemove(oldRoleInstance);
+
+            Console.WriteLine($"{oldRoleInstance.Port}: Container faulted. Recovering...");
+
+            RecoverFromFailureAsync(oldRoleInstance, ProcessManager.SingletonInstance).GetAwaiter().GetResult();
+        }
+
+        private static Task AttempToSendLoadSignalAsync(RoleInstance newRoleInstance, ProcessManager processManager)
+        {
+            var task = Task.CompletedTask;
+
+            if (!string.IsNullOrWhiteSpace(newRoleInstance.AssemblyFullPath))
+            {
+                Console.WriteLine($"[{newRoleInstance.Port}]: Attempting to send load assembly signal...");
+                processManager.TakeContainer(newRoleInstance);
+                task = ContainerController.SendLoadSignalToContainerAsync(newRoleInstance, numberOfAttempts: 1);
+            }
+
+            return task;
+        }
+
+        private static RoleInstance GetNewRoleInstance(ushort newPort, RoleInstance oldRoleInstance)
+        {
+            return new RoleInstance()
+            {
+                RoleName = oldRoleInstance.RoleName,
+                AssemblyFullPath = oldRoleInstance.AssemblyFullPath,
+                Port = newPort
+            };
+        }
+
+        private static Task RecoverFromFailureAsync(RoleInstance oldRoleInstance, ProcessManager processManager)
+        {
+            var sendLoadSignalTask = Task.CompletedTask;
 
             lock (processManager)
             {
                 var freeContainerPorts = processManager.GetAllFreeContainerPorts();
+                ushort newPort;
 
-                if (freeContainerPorts.Any()) // There is free container
+                if (freeContainerPorts.Any())
                 {
-                    ushort port = freeContainerPorts.First();
-                    Console.WriteLine($"[{args.Port}]: Moved to existing container [{port}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
+                    newPort = freeContainerPorts.First();
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Moved to existing container [{newPort}]");
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
-                else // There isn't any free container
+                else
                 {
-                    ushort port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                    Console.WriteLine($"[{args.Port}]: Replaced by new container [{port}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
+                    newPort = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Replaced by new container [{newPort}]");
                 }
+
+                sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
             }
 
-            if (sendLoadSignalTask != null)
-            {
-                sendLoadSignalTask.GetAwaiter().GetResult();
-            }
-        }
-
-        private static Task AttempToSendLoadSignalAsync(ushort port, string assemblyFullPath, ProcessManager processManager)
-        {
-            Task task = null;
-
-            if (!string.IsNullOrWhiteSpace(assemblyFullPath))
-            {
-                Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
-                processManager.TakeContainer(port, assemblyFullPath);
-                task = ContainerController.SendLoadSignalToContainerAsync(port, assemblyFullPath, numberOfAttempts: 1);
-            }
-
-            return task;
+            return sendLoadSignalTask;
         }
     }
 }
