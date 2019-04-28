@@ -63,7 +63,14 @@ namespace Compute
         private void OnContainerFaulted(ushort port, Exception ex)
         {
             var roleInstance = ProcessManager.SingletonInstance.GetRoleInstance(port);
-            ContainerFaulted?.Invoke(this, new ContainerHealthMonitorEventArgs(port, roleInstance?.AssemblyFullPath ?? "", ex));
+            if (roleInstance != null)
+            {
+                ContainerFaulted?.Invoke(this, new ContainerHealthMonitorEventArgs(roleInstance, ex));
+            }
+            else
+            {
+                ContainerFaulted?.Invoke(this, new ContainerHealthMonitorEventArgs(port, exception: ex));
+            }
         }
 
         private void PeriodicallyCheckHealth()

@@ -21,7 +21,7 @@ namespace Compute
         {
             var task = Task.CompletedTask;
 
-            if (!string.IsNullOrWhiteSpace(newRoleInstance.AssemblyFullPath))
+            if (!string.IsNullOrWhiteSpace(newRoleInstance.AssemblyFullPath) && !string.IsNullOrWhiteSpace(newRoleInstance.RoleName))
             {
                 Console.WriteLine($"[{newRoleInstance.Port}]: Attempting to send load assembly signal...");
                 processManager.TakeContainer(newRoleInstance);
