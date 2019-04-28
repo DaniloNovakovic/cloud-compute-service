@@ -150,6 +150,11 @@ namespace Compute
             if (this.containerProcessDictByPort.TryRemove(containerProcess.Port, out var container))
             {
                 Debug.WriteLine($"{typeof(ProcessManager).Name}: removed container[{container.Port}] ({DateTime.Now})");
+
+                if (container.RoleInstance != null)
+                {
+                    RoleEnvironment.SafeRemove(container.RoleInstance);
+                }
             }
         }
 
