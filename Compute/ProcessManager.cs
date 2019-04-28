@@ -88,13 +88,16 @@ namespace Compute
         /// </summary>
         public bool TakeContainer(RoleInstance roleInstance)
         {
+            if (string.IsNullOrWhiteSpace(roleInstance.RoleName))
+                return false;
+
             if (this.containerProcessDictByPort.TryGetValue(roleInstance.Port, out var containerProcess) && containerProcess.IsContainerFree)
             {
-                containerProcess.RoleInstance = roleInstance;
                 RoleEnvironment.SafeAddOrUpdate(roleInstance);
-
+                containerProcess.RoleInstance = roleInstance;
                 return true;
             }
+
             return false;
         }
 
