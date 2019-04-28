@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 
 namespace Compute
 {
@@ -30,15 +31,16 @@ namespace Compute
         /// <returns>List of successfully copied assemblies</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, IEnumerable<ushort> ports)
+        public IEnumerable<PackageAssemblyInfo> CopyAssemblies(string sourceDllFullPath, string destinationFolder, int numberOfInstances)
         {
             var destinationPaths = new List<PackageAssemblyInfo>();
-            string assemblyName = Path.GetFileNameWithoutExtension(sourceDllFullPath);
+            string roleName = Path.GetFileNameWithoutExtension(sourceDllFullPath);
+            var ports = ProcessManager.Instance.GetAllContainerPorts().Take(numberOfInstances);
             int instanceCount = 0;
 
             foreach (ushort port in ports)
             {
-                string destinationDllFullPath = Path.Combine(destinationFolder, $"{assemblyName}_{instanceCount++}.dll");
+                string destinationDllFullPath = Path.Combine(destinationFolder, $"{roleName}_{instanceCount++}.dll");
                 if (this.CopyFile(sourceDllFullPath, destinationDllFullPath))
                 {
                     destinationPaths.Add(new PackageAssemblyInfo()

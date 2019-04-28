@@ -10,17 +10,17 @@ namespace Compute
         public static void OnValidPackageFound(object sender, ValidPackageFoundEventArgs eventArgs)
         {
             var package = eventArgs.Package;
-            var ports = ProcessManager.Instance.GetAllContainerPorts().Take(package.NumberOfInstances ?? 0).ToList();
-            var destinationAssemblies = CopyAssemblies(package, ports);
+
+            var destinationAssemblies = CopyAssemblies(package, package.NumberOfInstances ?? 0);
             CopyDependencies(package);
             ContainerController.SendLoadSignalToContainersAsync(destinationAssemblies).GetAwaiter().GetResult();
         }
 
-        private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(PackageReaderResult package, List<ushort> ports)
+        private static IEnumerable<PackageAssemblyInfo> CopyAssemblies(PackageReaderResult package, int numberOfInstances)
         {
             var configItem = ComputeConfiguration.Instance.ConfigurationItem;
             string sourceDllFullPath = Path.Combine(configItem.PackageFullFolderPath, package.AssemblyName);
-            return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageTempFullFolderPath, ports);
+            return new PackageController().CopyAssemblies(sourceDllFullPath, configItem.PackageTempFullFolderPath, numberOfInstances);
         }
 
         private static void CopyDependencies(PackageReaderResult package)
