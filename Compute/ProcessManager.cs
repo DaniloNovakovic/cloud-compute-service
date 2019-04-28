@@ -102,6 +102,19 @@ namespace Compute
             return false;
         }
 
+        public bool TakeContainer(RoleInstance roleInstance)
+        {
+            if (this.containerProcessDictByPort.TryGetValue(roleInstance.Port, out var containerProcess) && containerProcess.IsContainerFree)
+            {
+                containerProcess.IsContainerFree = false;
+                containerProcess.AssemblyFullPath = roleInstance.AssemblyFullPath;
+                containerProcess.RoleInstance = roleInstance;
+                RoleEnvironment.SafeAddOrUpdate(roleInstance);
+                return true;
+            }
+            return false;
+        }
+
         private ushort? FindAvailablePortInClosedInterval(ushort minValue, ushort maxValue)
         {
             for (ushort currPort = minValue; currPort <= maxValue; ++currPort)
@@ -185,6 +198,7 @@ namespace Compute
                 this.Port = port;
             }
 
+            public RoleInstance RoleInstance { get; set; }
             public string AssemblyFullPath { get; set; } = string.Empty;
             public bool IsContainerFree { get; set; } = true;
             public ushort Port { get; }

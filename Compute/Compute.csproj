@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="ContainerHelpers\ContainerFaultHandler.cs" />
     <Compile Include="ContainerHelpers\ContainerHealthMonitorEventArgs.cs" />
-    <Compile Include="PackageLibrary\RoleInstance.cs" />
+    <Compile Include="RoleInstance.cs" />
     <Compile Include="ContainerHelpers\ContainerController.cs" />
     <Compile Include="Configuration\ComputeConfiguration.cs" />
     <Compile Include="Configuration\ComputeConfigurationItem.cs" />
@@ -67,7 +67,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Role.cs" />
-    <Compile Include="RoleEnvironmentService.cs" />
+    <Compile Include="RoleEnvironment.cs" />
     <Compile Include="WCFServer.cs" />
   </ItemGroup>
   <ItemGroup>
