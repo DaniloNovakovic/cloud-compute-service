@@ -35,13 +35,12 @@ namespace Compute
                 .ToArray();
         }
 
-        public RoleInstance GetAssemblyInfo(ushort port)
+        public RoleInstance GetRoleInstance(ushort port)
         {
             var retVal = new RoleInstance();
             if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess))
             {
-                retVal.Port = containerProcess.Port;
-                retVal.AssemblyFullPath = containerProcess.AssemblyFullPath;
+                retVal = containerProcess.RoleInstance;
             }
             return retVal;
         }

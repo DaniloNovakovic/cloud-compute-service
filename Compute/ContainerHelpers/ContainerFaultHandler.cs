@@ -8,7 +8,8 @@ namespace Compute
     {
         public static void OnContainerHealthFaulted(object sender, ContainerHealthMonitorEventArgs args)
         {
-            Console.WriteLine($"{args.Port}: Container faulted. Recovering...");
+            var oldRoleInstance = args.RoleInstance;
+            Console.WriteLine($"{oldRoleInstance.Port}: Container faulted. Recovering...");
             Task sendLoadSignalTask = null;
             var processManager = ProcessManager.SingletonInstance;
 
@@ -18,16 +19,16 @@ namespace Compute
 
                 if (freeContainerPorts.Any()) // There is free container
                 {
-                    ushort port = freeContainerPorts.First();
-                    Console.WriteLine($"[{args.Port}]: Moved to existing container [{port}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
+                    ushort newPort = freeContainerPorts.First();
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Moved to existing container [{newPort}]");
+                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
                     processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
                 }
                 else // There isn't any free container
                 {
-                    ushort port = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
-                    Console.WriteLine($"[{args.Port}]: Replaced by new container [{port}]");
-                    sendLoadSignalTask = AttempToSendLoadSignalAsync(port, args.AssemblyFullPath, processManager);
+                    ushort newPort = processManager.StartContainerProcess(ComputeConfiguration.Instance.ConfigurationItem);
+                    Console.WriteLine($"[{oldRoleInstance.Port}]: Replaced by new container [{newPort}]");
+                    sendLoadSignalTask = AttempToSendLoadSignalAsync(GetNewRoleInstance(newPort, oldRoleInstance), processManager);
                 }
             }
 
@@ -37,19 +38,28 @@ namespace Compute
             }
         }
 
-        private static Task AttempToSendLoadSignalAsync(ushort port, string assemblyFullPath, ProcessManager processManager)
+        private static Task AttempToSendLoadSignalAsync(RoleInstance newRoleInstance, ProcessManager processManager)
         {
             Task task = null;
 
-            if (!string.IsNullOrWhiteSpace(assemblyFullPath))
+            if (!string.IsNullOrWhiteSpace(newRoleInstance.AssemblyFullPath))
             {
-                Console.WriteLine($"[{port}]: Attempting to send load assembly signal...");
-                var roleInstance = new RoleInstance() { AssemblyFullPath = assemblyFullPath, Port = port };
-                processManager.TakeContainer(roleInstance);
-                task = ContainerController.SendLoadSignalToContainerAsync(roleInstance, numberOfAttempts: 1);
+                Console.WriteLine($"[{newRoleInstance.Port}]: Attempting to send load assembly signal...");
+                processManager.TakeContainer(newRoleInstance);
+                task = ContainerController.SendLoadSignalToContainerAsync(newRoleInstance, numberOfAttempts: 1);
             }
 
             return task;
+        }
+
+        private static RoleInstance GetNewRoleInstance(ushort newPort, RoleInstance oldRoleInstance)
+        {
+            return new RoleInstance()
+            {
+                RoleName = oldRoleInstance.RoleName,
+                AssemblyFullPath = oldRoleInstance.AssemblyFullPath,
+                Port = newPort
+            };
         }
     }
 }

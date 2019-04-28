@@ -8,15 +8,25 @@ namespace Compute
         {
         }
 
-        public ContainerHealthMonitorEventArgs(ushort port, string assemblyFullPath = "", Exception exception = null)
+        public ContainerHealthMonitorEventArgs(RoleInstance roleInstance, Exception exception = null)
         {
-            this.Port = port;
-            this.AssemblyFullPath = assemblyFullPath;
+            this.RoleInstance = roleInstance ?? throw new ArgumentNullException(nameof(roleInstance));
             this.Exception = exception;
         }
 
-        public string AssemblyFullPath { get; set; }
+        public ContainerHealthMonitorEventArgs(ushort port, string assemblyFullPath = "", Exception exception = null)
+        {
+            this.RoleInstance = new RoleInstance
+            {
+                Port = port,
+                AssemblyFullPath = assemblyFullPath
+            };
+            this.Exception = exception;
+        }
+
+        public RoleInstance RoleInstance { get; set; }
+        public string AssemblyFullPath => RoleInstance?.AssemblyFullPath ?? string.Empty;
         public Exception Exception { get; set; }
-        public ushort Port { get; set; }
+        public ushort Port => RoleInstance.Port;
     }
 }
