@@ -53,24 +53,31 @@ namespace JobWorker
 
         private void DoWork()
         {
-            try
+            while (true)
             {
-                var currentRoleInstance = RoleEnvironment.CurrentRoleInstance("JobWorker", containerId);
-                var brotherInstances = RoleEnvironment.BrotherInstances;
-
-                Console.WriteLine($"Current role instance: {currentRoleInstance}");
-                Console.WriteLine("Brother instances: ");
-                if (brotherInstances != null)
+                try
                 {
-                    foreach (var brother in brotherInstances)
+                    var currentRoleInstance = RoleEnvironment.CurrentRoleInstance("JobWorker", containerId);
+                    var brotherInstances = RoleEnvironment.BrotherInstances;
+
+                    Console.WriteLine($"{DateTime.Now}:");
+                    Console.WriteLine($"Current role instance: {currentRoleInstance}");
+                    Console.WriteLine("Brother instances: ");
+                    if (brotherInstances != null)
                     {
-                        Console.WriteLine(brother);
+                        foreach (var brother in brotherInstances)
+                        {
+                            Console.WriteLine(brother);
+                        }
                     }
+                    Console.WriteLine();
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                Thread.Sleep(10000);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using Common;
 
 namespace Compute
@@ -17,6 +18,7 @@ namespace Compute
 
             Console.WriteLine("Press ENTER to exit...");
             Console.ReadLine();
+            Console.WriteLine("Closing resources, please wait...");
 
             Stop(configItem);
         }
@@ -38,13 +40,15 @@ namespace Compute
 
         private static void Stop(ComputeConfigurationItem configItem)
         {
+            var closeServerTask = Task.Run(() => roleEnvironmentHost.Close());
             packageWatcher.Stop();
-            roleEnvironmentHost.Close();
             containerHealthMonitor.Stop();
 
             processManager.StopAllProcesses();
 
             new PackageController().DeletePackage(configItem.PackageTempFullFolderPath);
+
+            closeServerTask.GetAwaiter().GetResult();
         }
     }
 }
