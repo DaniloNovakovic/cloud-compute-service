@@ -40,6 +40,12 @@ namespace Compute
             return this.containerProcessDictByPort.TryGetValue(port, out var containerProcess) ? containerProcess.RoleInstance : null;
         }
 
+        public void ResetAllProcesses(ComputeConfigurationItem config)
+        {
+            this.StopAllProcesses();
+            this.StartContainerProcesses(config);
+        }
+
         public ushort StartContainerProcess(ComputeConfigurationItem config)
         {
             ushort port = this.GetNextPort(config.MinPort, config);
@@ -76,12 +82,6 @@ namespace Compute
             }
         }
 
-        public void ResetAllProcesses(ComputeConfigurationItem config)
-        {
-            StopAllProcesses();
-            StartContainerProcesses(config);
-        }
-
         /// <summary>
         /// Attempts to take container with port specified in roleInstance. Returns true upon
         /// success, false upon failure
@@ -92,6 +92,7 @@ namespace Compute
             {
                 containerProcess.RoleInstance = roleInstance;
                 RoleEnvironment.SafeAddOrUpdate(roleInstance);
+
                 return true;
             }
             return false;
@@ -180,10 +181,10 @@ namespace Compute
                 this.Port = port;
             }
 
-            public RoleInstance RoleInstance { get; set; }
-            public bool IsContainerFree => RoleInstance is null;
+            public bool IsContainerFree => this.RoleInstance is null;
             public ushort Port { get; }
             public Process Process { get; }
+            public RoleInstance RoleInstance { get; set; }
         }
     }
 }

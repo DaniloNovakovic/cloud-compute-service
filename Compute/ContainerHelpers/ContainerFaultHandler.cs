@@ -10,6 +10,8 @@ namespace Compute
         {
             var oldRoleInstance = args.RoleInstance;
 
+            RoleEnvironment.SafeRemove(oldRoleInstance);
+
             Console.WriteLine($"{oldRoleInstance.Port}: Container faulted. Recovering...");
 
             RecoverFromFailureAsync(oldRoleInstance, ProcessManager.SingletonInstance).GetAwaiter().GetResult();
