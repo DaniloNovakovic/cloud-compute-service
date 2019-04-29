@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3C69515B-B116-402B-9C6F-9D4799E5BD08}</ProjectGuid>
+    <ProjectGuid>{693591FA-DBCF-4542-9357-9F23046CB68D}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Compute</RootNamespace>
-    <AssemblyName>Compute</AssemblyName>
+    <RootNamespace>Client</RootNamespace>
+    <AssemblyName>Client</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -34,9 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,40 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComputeManagement.cs" />
-    <Compile Include="ContainerHelpers\ContainerFaultHandler.cs" />
-    <Compile Include="ContainerHelpers\ContainerHealthMonitorEventArgs.cs" />
-    <Compile Include="RoleInstance.cs" />
-    <Compile Include="ContainerHelpers\ContainerController.cs" />
-    <Compile Include="Configuration\ComputeConfiguration.cs" />
-    <Compile Include="Configuration\ComputeConfigurationItem.cs" />
-    <Compile Include="ContainerHelpers\ContainerHealthMonitor.cs" />
-    <Compile Include="PackageLibrary\PackageContracts\IPackageReader.cs" />
-    <Compile Include="PackageLibrary\PackageContracts\IFileIO.cs" />
-    <Compile Include="PackageLibrary\PackageContracts\IXDocumentLoader.cs" />
-    <Compile Include="PackageLibrary\PackageController.cs" />
-    <Compile Include="PackageLibrary\PackageFoundHandler.cs" />
-    <Compile Include="PackageLibrary\PackageReader.cs" />
-    <Compile Include="PackageLibrary\PackageReaderResult.cs" />
-    <Compile Include="PackageLibrary\FileIO.cs" />
-    <Compile Include="PackageLibrary\PackageWatcher.cs" />
-    <Compile Include="PackageLibrary\ValidPackageFoundEventArgs.cs" />
-    <Compile Include="PackageLibrary\XDocumentLoader.cs" />
-    <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Role.cs" />
-    <Compile Include="RoleEnvironment.cs" />
-    <Compile Include="WCFServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj">
-      <Project>{BAA11941-155F-4A24-987D-B86BD9B6A690}</Project>
-      <Name>Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

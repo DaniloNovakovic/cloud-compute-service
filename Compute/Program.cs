@@ -11,6 +11,7 @@ namespace Compute
         private static readonly PackageWatcher packageWatcher = new PackageWatcher();
         private static readonly ProcessManager processManager = ProcessManager.SingletonInstance;
         private static readonly WCFServer roleEnvironmentHost = new WCFServer(typeof(RoleEnvironment));
+        private static readonly WCFServer computeManagementHost = new WCFServer(typeof(ComputeManagement));
 
         private static void Main()
         {
@@ -32,6 +33,7 @@ namespace Compute
             containerHealthMonitor.Start();
 
             roleEnvironmentHost.Open();
+            computeManagementHost.Open();
 
             packageWatcher.ValidPackageFound += PackageFoundHandler.OnValidPackageFound;
             packageWatcher.Start();
@@ -41,6 +43,7 @@ namespace Compute
         private static void Stop(ComputeConfigurationItem configItem)
         {
             var closeServerTask = Task.Run(() => roleEnvironmentHost.Close());
+            var closeComputeManagementTask = Task.Run(() => computeManagementHost.Close());
             packageWatcher.Stop();
             containerHealthMonitor.Stop();
 
@@ -49,6 +52,7 @@ namespace Compute
             new PackageController().DeletePackage(configItem.PackageTempFullFolderPath);
 
             closeServerTask.GetAwaiter().GetResult();
+            closeComputeManagementTask.GetAwaiter().GetResult();
         }
     }
 }
