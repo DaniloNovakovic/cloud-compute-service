@@ -32,8 +32,6 @@ namespace Compute
             this.ConfigurationItem.PackageTempRelativeFolderPath = this.GetConfigValue(nameof(this.ConfigurationItem.PackageTempRelativeFolderPath));
             this.ConfigurationItem.PackageTempFullFolderPath = this.GetFullPath(this.ConfigurationItem.PackageTempRelativeFolderPath);
 
-            this.ConfigurationItem.PackageAcquisitionIntervalMilliseconds = this.GetConfigValue<int>(nameof(this.ConfigurationItem.PackageAcquisitionIntervalMilliseconds));
-
             Debug.WriteLine($"Configuration Item Created ({DateTime.Now}):" + Environment.NewLine + this.ConfigurationItem);
         }
 
