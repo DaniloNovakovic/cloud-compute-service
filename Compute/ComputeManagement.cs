@@ -32,8 +32,15 @@ namespace Compute
             else
             {
                 int numInstancesToStop = currInstanceCount - count;
+                StopInstances(currRole, numInstancesToStop);
                 return $"[SUCCESS] Stopped {numInstancesToStop} number of instances";
             }
+        }
+
+        private void StopInstances(Role currRole, int numInstancesToStop)
+        {
+            currRole.Instances.Values.Take(numInstancesToStop).ToList()
+                .ForEach(instance => processManager.FreeContainer(instance.Port));
         }
 
         private bool Validate(string assemblyName, int count, out string errorMessage)

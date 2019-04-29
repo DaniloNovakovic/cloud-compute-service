@@ -101,6 +101,22 @@ namespace Compute
             return false;
         }
 
+        /// <summary>
+        /// Attempts to free container on given port
+        /// </summary>
+        /// <param name="port">Port on which the container is running</param>
+        public bool FreeContainer(ushort port)
+        {
+            if (this.containerProcessDictByPort.TryGetValue(port, out var containerProcess)
+                && !containerProcess.IsContainerFree)
+            {
+                SafelyCloseProcess(containerProcess);
+                StartNewContainerProcess(port, ComputeConfiguration.Instance.ConfigurationItem);
+                return true;
+            }
+            return false;
+        }
+
         private ushort? FindAvailablePortInClosedInterval(ushort minValue, ushort maxValue)
         {
             for (ushort currPort = minValue; currPort <= maxValue; ++currPort)
