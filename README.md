@@ -23,7 +23,7 @@ To start application:
 1. Copy files from `_JobWorkerDllsForTesting` into `./packages/_JobWorker/` folder (Check [Compute Configuration](#Compute-Configuration) section if you want to change path)
 1. Build and run solution
 
-> Note: This project is made in .NET Framework 4.7.2
+> Note: This project is made using .NET Framework 4.7.2
 
 ## Client
 
