@@ -7,17 +7,14 @@ namespace Client
 {
     internal static class Program
     {
-        private const string assemblyConfigKeyName = "assemblyName";
-
         private static void Main()
         {
-            string assemblyName = ConfigurationManager.AppSettings.Get(assemblyConfigKeyName)
-                ?? throw new ConfigurationErrorsException($"<appSettings> <add key='{assemblyConfigKeyName}' value='...' /> in configuration is missing");
-
-            Console.WriteLine($"{nameof(assemblyName)}: {assemblyName}");
-
             while (true)
             {
+                Console.Write("Enter role / assembly name: ");
+
+                string assemblyName = Console.ReadLine();
+
                 Console.Write("Enter scale value (integer): ");
 
                 if (!int.TryParse(Console.ReadLine(), out int scaleCount))
