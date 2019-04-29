@@ -1,6 +1,6 @@
-# Simplified Cloud Compute Service 
+# Simplified Cloud Compute Service
 
-- a school project from Cloud Computing course in Applied Software Engineering department (Faculty of Technical Sciences Novi Sad).
+School project from Cloud Computing course in Applied Software Engineering department (Faculty of Technical Sciences Novi Sad).
 
 ## Table of Contents
 
@@ -46,6 +46,8 @@ Values of interest for change:
 - `PackageRelativeFolderPath` - relative path to the folder in which the `.xml` with its `.dll` pair (and it's dependencies) are expected.
 
 - `PackageTempRelativeFolderPath` - relative path to the folder which will hold `NumberOfContainersToStart` copies of `.dll`s with it's dependencies from `PackageRelativeFolderPath`. (Names of these copies will are assigned at runtime)
+
+- `PackageConfigFileName` - name of package configuration (.xml) file that is expected to be located inside `PackageRelativeFolderPath`
 
 ```xml
 <appSettings>
@@ -96,3 +98,15 @@ Console application that implements `IContainerManagement` interface and provide
 
 - `CheckHealth()`
   - Returns `'Healthy'`.
+
+## JobWorker
+
+Example of valid implementation of `.dll` that `Container` would load.
+
+## RoleEnvironmentLibrary
+
+Contains client version of `RoleEnvironment` class that is meant for `JobWorker` to use. It connects to `Common`'s WCF service to acquire information about current and brother role instances.
+
+## _JobWorkerDllsForTesting
+
+A folder that holds valid implemented package (`.xml` and `.dll`) with its dependencies. For testing purpose it is advised to copy these files into the `PackageRelativeFolderPath` specified in [Compute Configuration](#Compute-Configuration) 
