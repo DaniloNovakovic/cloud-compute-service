@@ -20,7 +20,7 @@ School project from Cloud Computing course in Applied Software Engineering depar
 
 To start application:
 
-1. Copy files from `_JobWorkerDllsForTesting` into `./packages/_JobWorker/` folder (Check [Compute Configuration](#Compute-Configuration) section if you want to change path)
+1. Copy files from `./_JobWorkerDllsForTesting/` into `./_PlacePackageDllsHere/` folder (Check [Compute Configuration](#Compute-Configuration) section if you want to change path)
 1. Build solution
 1. (Optional) Set solution to multiple startup projects ( *Right Click Solution > Properties > Multiple Startup Perojects*) where Compute project will be loaded first and then Client
 1. Run solution
@@ -66,15 +66,14 @@ Values of interest for change:
 
 ```xml
 <appSettings>
-  <add key="ContainerRelativeFilePath" value="..\..\..\Container\Bin\Debug\Container.exe" />
-  <add key="MaxPort" value="10050" />
-  <add key="MinPort" value="10010" />
-  <add key="NumberOfContainersToStart" value="4" />
-  <add key="PackageConfigFileName" value="JobWorker.xml" />
-  <add key="PackageRelativeFolderPath" value="..\..\..\packages\_JobWorker\" />
-  <add key="PackageTempRelativeFolderPath" value="..\..\..\packages\_JobWorker\Temp\" />
-  <add key="PackageAcquisitionIntervalMilliseconds" value="2000" />
-</appSettings>
+    <add key="ContainerRelativeFilePath" value="..\..\..\Container\Bin\Debug\Container.exe" />
+    <add key="MaxPort" value="10050" />
+    <add key="MinPort" value="10010" />
+    <add key="NumberOfContainersToStart" value="4" />
+    <add key="PackageConfigFileName" value="JobWorker.xml" />
+    <add key="PackageRelativeFolderPath" value="..\..\..\_PlacePackageDllsHere\" />
+    <add key="PackageTempRelativeFolderPath" value="..\..\..\_PlacePackageDllsHere\Temp\" />
+  </appSettings>
 ```
 
 `system.serviceModel` defines endpoints for WCF Services that `Compute` provides. It is advised not to modify these since `RoleEnvironmentLibrary` as well as `Client` rely on them.
