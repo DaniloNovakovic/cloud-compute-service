@@ -21,9 +21,13 @@ School project from Cloud Computing course in Applied Software Engineering depar
 To start application:
 
 1. Copy files from `_JobWorkerDllsForTesting` into `./packages/_JobWorker/` folder (Check [Compute Configuration](#Compute-Configuration) section if you want to change path)
-1. Build and run solution
+1. Build solution
+1. (Optional) Set solution to multiple startup projects ( *Right Click Solution > Properties > Multiple Startup Perojects*) where Compute project will be loaded first and then Client
+1. Run solution
 
-> Note: This project is made using .NET Framework 4.7.2
+> This project is made using .NET Framework 4.7.2
+
+Note: It is important that you **build entire solution** first instead of starting `Compute` right away because it relies on `Container`'s `.exe` file generated when you build solution.
 
 ## Client
 
