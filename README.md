@@ -4,15 +4,25 @@ School project from Cloud Computing course in Applied Software Engineering depar
 
 ## Table of Contents
 
+- [Getting Started](#Getting-Started)
 - [Client](#Client)
   - [Configuration](#Client-Configuration)
 - [Common](#Common)
 - [Compute](#Compute)
   - [Configuration](#Compute-Configuration)
+  - [Expected Package Configuration](#Expected-Package-Configuration)
 - [Container](#Container)
 - [JobWorker](#JobWorker)
 - [RoleEnvironmentLibrary](#RoleEnvironmentLibrary)
 - [_JobWorkerDllsForTesting](#_JobWorkerDllsForTesting)
+
+## Getting Started
+
+To start application:
+
+1. Copy files from `_JobWorkerDllsForTesting` into `./packages/_JobWorker/` folder (Check [Compute Configuration](#Compute-Configuration) section if you want to change path)
+1. Build and run solution
+
 
 ## Client
 
@@ -86,6 +96,24 @@ Values of interest for change:
   </services>
 </system.serviceModel>
 ```
+
+### Expected Package Configuration
+
+While reading a package `Compute` will expect `PackageConfigFileName` file located in `PackageRelativeFolderPath` to have following structure:
+
+```xml
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JobWorker</name>
+    </assembly>
+    <numberOfInstances value="2"/>
+</doc>
+```
+
+Where `<assembly><name>` specifies the name of the assembly (worker role), and `<numberOfInstances value="">` defines the number of `Containers` that `Compute` will call `Load` method to.
+
+> If the `.xml` configuration is invalid (ex. `numberOfInstances`'s `value` is bigger then `NumberOfContainersToStart`, `.xml` is in incorrect format, or `name`.dll (ex. `JobWorker`.dll) from `<assembly><name>` does not exist), then `Compute` will delete all files and folders located inside `PackageRelativeFolderPath`.
 
 ## Container
 
