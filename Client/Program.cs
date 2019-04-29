@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
 using Common;
 
 namespace Client
@@ -11,7 +12,7 @@ namespace Client
         {
             while (true)
             {
-                Console.Write("Enter role / assembly name: ");
+                Console.Write("Enter role / assembly name (case-sensitive): ");
 
                 string assemblyName = Console.ReadLine();
 
@@ -24,6 +25,16 @@ namespace Client
                 }
 
                 SafeScale(assemblyName, scaleCount);
+
+                Console.Write("Quit (y/N)? ");
+                switch (Console.ReadLine())
+                {
+                    case "y":
+                    case "Y":
+                        return;
+                }
+
+                Console.WriteLine();
             }
         }
 
@@ -36,7 +47,14 @@ namespace Client
                 var proxy = factory.CreateChannel();
 
                 string response = proxy.Scale(assemblyName, scaleCount);
+
+                Console.ForegroundColor = Regex.IsMatch(response, @"\[ERROR\]", RegexOptions.IgnoreCase)
+                    ? ConsoleColor.Red
+                    : ConsoleColor.Green;
+
                 Console.WriteLine(response);
+
+                Console.ResetColor();
 
                 factory.Close();
             }
