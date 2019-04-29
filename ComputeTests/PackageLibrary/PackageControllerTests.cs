@@ -26,7 +26,7 @@ namespace Compute.Tests
         }
 
         [Test()]
-        public void DeletePackage_WhenCalled_DeletesFolder()
+        public void DeletePackage_WhenCalled_DeletesPackage()
         {
             const string packageFolder = "myPackageFolder";
             this.packageController.DeletePackage(packageFolder);
