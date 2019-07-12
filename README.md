@@ -1,5 +1,7 @@
 # Simplified Cloud Compute Service
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 School project from Cloud Computing course in Applied Software Engineering department (Faculty of Technical Sciences Novi Sad).
 
 ## Table of Contents
