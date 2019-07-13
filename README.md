@@ -1,4 +1,4 @@
-# Simplified Cloud Compute Service
+# Simplified Cloud Compute Service (DEPRECATED)
 
 [![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
