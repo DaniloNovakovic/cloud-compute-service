@@ -33,6 +33,10 @@ Note: It is important that you **build entire solution** first instead of starti
 
 ## Client
 
+Provides an interface for user to load roles by entering role name aswell as number of instances / containers on which they should run.
+
+![Client Console Image](./doc/Client.PNG)
+
 ### Client Configuration
 
 Expected `address` for `Common.IComputeManagement`'s endpoint to match the address of [Compute](#Compute)'s WCF Service that is implementing the `Common.IComputeManagement` interface
@@ -53,6 +57,12 @@ Expected `address` for `Common.IComputeManagement`'s endpoint to match the addre
 Holds the interfaces that are used through the solution for WCF Communication.
 
 ## Compute
+
+Compute manages containers (starts them up and closes them down dynamically on Client request).
+
+Aside from it's console's window feature to display logged data, it also provides the ability to close all of the running containers by pressing *ENTER* key on keyboard.
+
+![Compute Console Image](./doc/Compute.PNG)
 
 ### Compute Configuration
 
@@ -132,6 +142,12 @@ Console application that implements `IContainerManagement` interface and provide
 
 - `CheckHealth()`
   - Returns `'Healthy'`.
+
+Essentialy it provides an environment / home for Role instance to live in.
+
+![Container Console Image](./doc/Container.PNG)
+
+> If no port is provided as `args` during Container application start up then port `10100` will be taken by default.
 
 ## JobWorker
 
